@@ -8,11 +8,11 @@ BATCH_SIZE = 128
 
 paths = {
     "h5py_sp": "adata_benchmark_sparse.h5ad",
-    "zarr_sp": "adata_benchmark_sparse.zrad",
     "soma_sp": "adata_benchmark_sparse.soma",
     "h5py_dense": "adata_benchmark_dense.h5ad",
-    "zarr_dense": "adata_benchmark_dense.zrad",
-    "zarr_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad",
+    # "zarr_sp": "adata_benchmark_sparse.zrad",
+    # "zarr_dense": "adata_benchmark_dense.zrad",
+    # "zarr_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad",
     "parquet": "X_dense.parquet",
     "parquet_chunk": f"X_dense_chunk_{BATCH_SIZE}.parquet",
     "arrow": "X_dense.parquet",

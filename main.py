@@ -2,7 +2,7 @@ from typing import Literal
 
 import h5py
 import numpy as np
-import pyarrow as pa
+import pyarrow.dataset
 import pyarrow.parquet
 import tiledbsoma as soma
 import zarr
@@ -86,7 +86,7 @@ class Zarr:
 class Arrow:
     @staticmethod
     def read(path):
-        dataset = pa.dataset.dataset(path, format="parquet")
+        dataset = pyarrow.dataset.dataset(path, format="parquet")
         return dataset
 
     @staticmethod
@@ -100,7 +100,7 @@ class Arrow:
 class Parquet:
     @staticmethod
     def read(path):
-        pq_file = pa.parquet.ParquetFile(path)
+        pq_file = pyarrow.parquet.ParquetFile(path)
         return pq_file
 
     @staticmethod
@@ -141,11 +141,15 @@ def benchmark(
             case "arrow":
                 if random:
                     raise ValueError("Arrow does not support random access")
+                if sparse:
+                    raise ValueError("Arrow does not support sparse data")
                 dataset = Arrow.read(path)
                 while True:
                     yield
                     Arrow.iterate(dataset)
             case "parquet":
+                if sparse:
+                    raise ValueError("Parquet does not support sparse data")
                 pq_file = Parquet.read(path)
                 while True:
                     yield
