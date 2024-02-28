@@ -143,11 +143,15 @@ def benchmark(
                 while True:
                     yield
                     H5py.iterate(dataset, labels, random)
+                    yield
+
             case "zarr":
                 file, (dataset, labels) = Zarr.read(path, sparse)
                 while True:
                     yield
                     Zarr.iterate(dataset, labels, random)
+                    yield
+
             case "soma":
                 if not sparse:
                     raise ValueError("Soma only supports sparse data")
@@ -155,6 +159,8 @@ def benchmark(
                 while True:
                     yield
                     Soma.iterate(dataset, labels, random)
+                    yield
+
             case "arrow":
                 if random:
                     raise ValueError("Arrow does not support random access")
@@ -164,6 +170,8 @@ def benchmark(
                 while True:
                     yield
                     Arrow.iterate(dataset)
+                    yield
+
             case "parquet":
                 if sparse:
                     raise ValueError("Parquet does not support sparse data")
@@ -171,6 +179,8 @@ def benchmark(
                 while True:
                     yield
                     Parquet.iterate(pq_file, random)
+                    yield
+
             case "polars":
                 if random:
                     raise ValueError("Polars does not support random access")
@@ -180,6 +190,9 @@ def benchmark(
                 while True:
                     yield
                     Polars.iterate(df)
+                    yield
+                    df = Polars.read(path)  # Otherwise it will be exhausted
+
             case _:
                 raise NotImplementedError(f"Type {type} not implemented")
 
