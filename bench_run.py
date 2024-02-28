@@ -13,10 +13,7 @@ paths = {
     # "zarr_sp": "adata_benchmark_sparse.zrad",
     # "zarr_dense": "adata_benchmark_dense.zrad",
     # "zarr_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad",
-    "parquet": "X_dense.parquet",
-    "parquet_chunk": f"X_dense_chunk_{BATCH_SIZE}.parquet",
-    "arrow": "X_dense.parquet",
-    "arrow_chunk": f"X_dense_chunk_{BATCH_SIZE}.parquet",
+    "polars": "X_dense.parquet",
 }
 
 benches = {}

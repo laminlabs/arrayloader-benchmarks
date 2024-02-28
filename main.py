@@ -2,6 +2,8 @@ from typing import Literal
 
 import h5py
 import numpy as np
+import pandas as pd
+import polars as pl
 import pyarrow.dataset
 import pyarrow.parquet
 import tiledbsoma as soma
@@ -104,18 +106,33 @@ class Parquet:
         return pq_file
 
     @staticmethod
-    def iterate(pq_file, random: bool = False):
+    def iterate(pq_file: pyarrow.parquet.ParquetFile, random: bool = False):
         n_batches = pq_file.num_row_groups
         iterator = np.random.permutation(n_batches) if random else range(n_batches)
         for i in iterator:
-            df = pq_file.read_row_group(i).to_pandas()
+            df: pd.DataFrame = pq_file.read_row_group(i).to_pandas()
             batch_X = df.iloc[:, :-1].to_numpy()
             batch_labels = df.iloc[:, -1].to_numpy()
 
 
+class Polars:
+    @staticmethod
+    def read(path):
+        return pl.scan_parquet(path)
+
+    @staticmethod
+    def _callback(df: pl.DataFrame):
+        df.to_pandas(use_pyarrow_extension_array=True)
+        return df
+
+    @staticmethod
+    def iterate(df: pl.LazyFrame):
+        df.map(Polars._callback).collect(streaming=True)
+
+
 def benchmark(
     path: str,
-    type: Literal["h5py", "zarr", "soma", "arrow", "parquet"],
+    type: Literal["h5py", "zarr", "soma", "arrow", "parquet", "polars"],
     random: bool,
     sparse: bool,
 ):
@@ -154,6 +171,15 @@ def benchmark(
                 while True:
                     yield
                     Parquet.iterate(pq_file, random)
+            case "polars":
+                if random:
+                    raise ValueError("Polars does not support random access")
+                if sparse:
+                    raise ValueError("Polars does not support sparse data")
+                df = Polars.read(path)
+                while True:
+                    yield
+                    Polars.iterate(df)
             case _:
                 raise NotImplementedError(f"Type {type} not implemented")
 
