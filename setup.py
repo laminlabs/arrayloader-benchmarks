@@ -1,13 +1,12 @@
 # %%
 import subprocess
-import warnings
 
 import h5py
 import lamindb as ln
 import scanpy as sc
 import tiledbsoma as soma
 
-
+BATCH_SIZE = 128
 subprocess.run("lamin load laminlabs/arrayloader-benchmarks", shell=True)
 artifact = ln.Artifact.filter(uid="z3AsAOO39crEioi5kEaG").one()
 
@@ -44,9 +43,9 @@ adata.write_zarr(
 
 # %%
 # save h5 with dense chunked X, no way to do it with adata.write_h5ad
-with h5py.File(f"X_dense_chunk_{BATCH_SIZE}.h5", mode="w") as f:
+with h5py.File(f"adata_dense_chunk_{BATCH_SIZE}.h5", mode="w") as f:
     f.create_dataset(
-        "X",
+        "adata",
         adata.X.shape,
         dtype=adata.X.dtype,
         data=adata.X,
@@ -60,9 +59,11 @@ df_X_labels = sc.get.obs_df(adata, keys=adata.var_names.to_list() + ["cell_state
 
 # %%
 # default row groups
-df_X_labels.to_parquet("X_dense.parquet", compression=None)
+df_X_labels.to_parquet("adata_dense.parquet", compression=None)
 
 # %%
 df_X_labels.to_parquet(
-    f"X_dense_chunk_{BATCH_SIZE}.parquet", compression=None, row_group_size=BATCH_SIZE
+    f"adata_dense_chunk_{BATCH_SIZE}.parquet",
+    compression=None,
+    row_group_size=BATCH_SIZE,
 )

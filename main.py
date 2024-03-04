@@ -1,223 +1,61 @@
-from typing import Literal
+# %%
+import timeit
 
-import h5py
-import numpy as np
-import pandas as pd
-import polars as pl
-import pyarrow.dataset
-import pyarrow.parquet
-import tiledbsoma as soma
-import zarr
-from anndata._core.sparse_dataset import sparse_dataset
-
-
-def index_iter(n_obs, batch_size, shuffle=True):
-    # progress_bar = tqdm(total=round(n_obs / batch_size + 0.5))
-    if shuffle:
-        indices = np.random.permutation(n_obs)
-    else:
-        indices = np.arange(n_obs)
-
-    for i in range(0, n_obs, batch_size):
-        # progress_bar.update(1)
-        yield indices[i : min(i + batch_size, n_obs)]
-    # progress_bar.close()
-
+import rich
+import rich_click as click
+from benchmarks import benchmark
+from loguru import logger
 
 BATCH_SIZE = 128
 
 
-def _iterate(dataset, h5labels, random: bool = False, need_sort: bool = False):
-    for batch_idx in index_iter(dataset.shape[0], BATCH_SIZE, shuffle=random):
-        if random and need_sort:
-            batch_idx.sort()
-        batch_X = dataset[batch_idx, :]
-        batch_labels = h5labels[batch_idx]
+paths = {
+    "h5py_sp": "adata_benchmark_sparse.h5ad",
+    "soma_sp": "adata_benchmark_sparse.soma",
+    "h5py_dense": "adata_benchmark_dense.h5ad",
+    "zarr_sp": "adata_benchmark_sparse.zrad",
+    "zarr_dense": "adata_benchmark_dense.zrad",
+    "zarr_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad",
+    "parquet": "adata_dense.parquet",
+    "polars": "adata_dense.parquet",
+    "parquet_chunk": f"adata_dense_chunk_{BATCH_SIZE}.parquet",
+    "arrow": "adata_dense.parquet",
+    "arrow_chunk": f"adata_dense_chunk_{BATCH_SIZE}.parquet",
+}
+logger.info("Initializing")
 
-
-class Soma:
-    @staticmethod
-    def read(path):
-        soma_file = soma.open(path)
-        soma_sparse_dataset = soma_file["ms"]["RNA"]["X"]["data"]
-        soma_labels = soma_file["obs"]
-        return soma_file, (soma_sparse_dataset, soma_labels)
-
-    @staticmethod
-    def iterate(dataset, labels, random: bool = False):
-        n_obs, n_vars = len(labels), len(dataset["ms"]["RNA"]["var"])
-        for batch_idx in index_iter(len(labels), BATCH_SIZE, shuffle=random):
-            batch_X = (
-                dataset.read([batch_idx])
-                .coos((n_obs, n_vars))
-                .concat()
-                .to_scipy()
-                .tocsr()[batch_idx]
-            )
-            batch_conds = (
-                labels.read([batch_idx], column_names=["cell_states"])
-                .concat()
-                .to_pandas()
-            )
-
-
-class H5py:
-    @staticmethod
-    def read(path, is_sparse: bool = False):
-        h5_file = h5py.File(path, mode="r")
-        dataset = sparse_dataset(h5_file["X"]) if is_sparse else h5_file["X"]
-        return h5_file, (dataset, h5_file["obs"]["cell_states"]["codes"])
-
-    @staticmethod
-    def iterate(dataset, h5labels, random: bool = False):
-        _iterate(dataset, h5labels, random, need_sort=True)
-
-
-class Zarr:
-    @staticmethod
-    def read(path, is_sparse: bool = False):
-        zarr_file = zarr.open(path)
-        dataset = sparse_dataset(zarr_file["X"]) if is_sparse else zarr_file["X"]
-        return zarr_file, (dataset, zarr_file["obs"]["cell_states"]["codes"])
-
-    @staticmethod
-    def iterate(dataset, h5labels, random: bool = False):
-        _iterate(dataset, h5labels, random, need_sort=False)
-
-
-class Arrow:
-    @staticmethod
-    def read(path):
-        dataset = pyarrow.dataset.dataset(path, format="parquet")
-        return dataset
-
-    @staticmethod
-    def iterate(dataset):
-        for batch in dataset.to_batches(batch_size=BATCH_SIZE):
-            df = batch.to_pandas()
-            batch_X = df.iloc[:, :-1].to_numpy()
-            batch_labels = df.iloc[:, -1].to_numpy()
-
-
-class Parquet:
-    @staticmethod
-    def read(path):
-        pq_file = pyarrow.parquet.ParquetFile(path)
-        return pq_file
-
-    @staticmethod
-    def iterate(pq_file: pyarrow.parquet.ParquetFile, random: bool = False):
-        n_batches = pq_file.num_row_groups
-        iterator = np.random.permutation(n_batches) if random else range(n_batches)
-        for i in iterator:
-            df: pd.DataFrame = pq_file.read_row_group(i).to_pandas()
-            batch_X = df.iloc[:, :-1].to_numpy()
-            batch_labels = df.iloc[:, -1].to_numpy()
-
-
-class Polars:
-    @staticmethod
-    def read(path):
-        return pl.scan_parquet(path)
-
-    @staticmethod
-    def _callback(df: pl.DataFrame):
-        df.to_pandas(use_pyarrow_extension_array=True)
-        return df
-
-    @staticmethod
-    def iterate(df: pl.LazyFrame):
-        df.map(Polars._callback).collect(streaming=True)
-
-
-def benchmark(
-    path: str,
-    type: Literal["h5py", "zarr", "soma", "arrow", "parquet", "polars"],
-    random: bool,
-    sparse: bool,
-):
+benches = {}
+for name, path in paths.items():
+    benches[name] = benchmark(path, name.split("_")[0], False, "sp" in name)
+    next(benches[name])
     try:
-        match type:
-            case "h5py":
-                file, (dataset, labels) = H5py.read(path, sparse)
-                while True:
-                    yield
-                    H5py.iterate(dataset, labels, random)
-                    yield
-
-            case "zarr":
-                file, (dataset, labels) = Zarr.read(path, sparse)
-                while True:
-                    yield
-                    Zarr.iterate(dataset, labels, random)
-                    yield
-
-            case "soma":
-                if not sparse:
-                    raise ValueError("Soma only supports sparse data")
-                (dataset, labels) = Soma.read(path)
-                while True:
-                    yield
-                    Soma.iterate(dataset, labels, random)
-                    yield
-
-            case "arrow":
-                if random:
-                    raise ValueError("Arrow does not support random access")
-                if sparse:
-                    raise ValueError("Arrow does not support sparse data")
-                dataset = Arrow.read(path)
-                while True:
-                    yield
-                    Arrow.iterate(dataset)
-                    yield
-
-            case "parquet":
-                if sparse:
-                    raise ValueError("Parquet does not support sparse data")
-                pq_file = Parquet.read(path)
-                while True:
-                    yield
-                    Parquet.iterate(pq_file, random)
-                    yield
-
-            case "polars":
-                if random:
-                    raise ValueError("Polars does not support random access")
-                if sparse:
-                    raise ValueError("Polars does not support sparse data")
-                df = Polars.read(path)
-                while True:
-                    yield
-                    Polars.iterate(df)
-                    yield
-                    df = Polars.read(path)  # Otherwise it will be exhausted
-
-            case _:
-                raise NotImplementedError(f"Type {type} not implemented")
-
-    finally:
-        try:
-            file.close()
-        except (AttributeError, NameError):
-            ...
+        benches[name + "_rand"] = benchmark(
+            path, name.split("_")[0], True, "sp" in name
+        )
+        next(benches[name + "_rand"])
+    except ValueError:
+        ...
 
 
-# @click.command()
-# @click.argument("path", type=str)
-# @click.argument("type", type=click.Choice(["h5py", "zarr", "soma", "arrow", "parquet"]))
-# @click.option("--random", type=bool, default=False, is_flag=True)
-# @click.option("--sparse", type=bool, default=False, is_flag=True)
-# def run(
-#     path: str,
-#     type: Literal["h5py", "zarr", "soma", "arrow", "parquet"],
-#     random: bool,
-#     sparse: bool,
-# ):
-#     benchmark(path, type, random, sparse, True)
+@click.command()
+@click.argument("tobench", type=click.Choice(list(benches.keys()) + ["all"]), nargs=-1)
+@click.option("--output", "-o", type=str, default="results.tsv")
+def main(tobench: list[str], output: str):
+    global benches
+    console = rich.get_console()
+
+    if not tobench or tobench != "all":
+        benches = {k: v for k, v in benches.items() if k in tobench}
+
+    for name, bench in benches.items():
+        console.rule(f"[bold]Running '{name}'", align="left")
+        with open(output, "a") as f:
+            for i in range(5):
+                time_taken = timeit.Timer(lambda: next(bench)).timeit(3)
+                f.write(f"{name}\t{i}\t{time_taken/3}\n")
+                print(f"Loop {i}: {time_taken/3:01f}s/iter of 3 iterations")
+                next(bench)
 
 
-# if __name__ == "__main__":
-#     main()
-
-# # Z
+if __name__ == "__main__":
+    main()
