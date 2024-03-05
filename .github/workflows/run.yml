@@ -25,6 +25,8 @@ jobs:
 
       - name: Get data
         run: python setup.py --nrows 256 --cols 500
+        shell: bash -el {0}
 
       - name: Run benchmark
         run: python benchmark.py
+        shell: bash -el {0}
