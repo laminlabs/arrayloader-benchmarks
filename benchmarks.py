@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal, Protocol, Type
 
 import h5py
@@ -137,7 +138,7 @@ class Polars:
 
 
 def benchmark(
-    path: str,
+    path: Path | str,
     type: Literal["h5py", "zarr", "soma", "arrow", "parquet", "polars"],
     random: bool,
     sparse: bool,
@@ -157,13 +158,13 @@ def benchmark(
     }
 
     try:
-        cl = matches[type](path, sparse)
+        cl = matches[type](str(path), sparse)
         while True:
             yield
             cl.iterate(random)
             yield
             if type == "polars":
-                cl = matches[type](path, sparse)
+                cl = matches[type](str(path), sparse)
     finally:
         try:
             cl.file.close()  # type: ignore
