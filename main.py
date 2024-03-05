@@ -51,7 +51,7 @@ def main(path: Path, tobench: list[str], epochs: int, output: str):
 
         try:
             b = benchmark(path, name.split("_")[0], random=True, sparse="sp" in name)
-            next(benches[name + "_rand"])
+            next(b)  # Need this to try to initialize the generator to catch errors.
             benches[name + "_rand"] = b
         except ValueError:
             ...
