@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Protocol, Type
 
 import h5py
 import numpy as np
@@ -25,6 +25,12 @@ def index_iter(n_obs, batch_size, shuffle=True):
 
 
 BATCH_SIZE = 128
+
+
+class Interface(Protocol):
+    def __init__(self, path: str, sparse: bool = False): ...
+
+    def iterate(self, random: bool = False): ...
 
 
 def _iterate(dataset, h5labels, random: bool = False, need_sort: bool = False):
@@ -141,7 +147,7 @@ def benchmark(
     if random and type in ["arrow", "polars"]:
         raise ValueError(f"{type} does not support random access")
 
-    matches = {
+    matches: dict[str, Type[Interface]] = {
         "h5py": H5py,
         "zarr": Zarr,
         "soma": Soma,
@@ -160,26 +166,6 @@ def benchmark(
                 cl = matches[type](path, sparse)
     finally:
         try:
-            cl.file.close()
+            cl.file.close()  # type: ignore
         except (AttributeError, NameError):
             ...
-
-
-# @click.command()
-# @click.argument("path", type=str)
-# @click.argument("type", type=click.Choice(["h5py", "zarr", "soma", "arrow", "parquet"]))
-# @click.option("--random", type=bool, default=False, is_flag=True)
-# @click.option("--sparse", type=bool, default=False, is_flag=True)
-# def run(
-#     path: str,
-#     type: Literal["h5py", "zarr", "soma", "arrow", "parquet"],
-#     random: bool,
-#     sparse: bool,
-# ):
-#     benchmark(path, type, random, sparse, True)
-
-
-# if __name__ == "__main__":
-#     main()
-
-# # Z
