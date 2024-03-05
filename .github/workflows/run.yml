@@ -1,0 +1,32 @@
+name: Trial run
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  repository_dispatch:
+    types: [build]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment.yml
+          init-shell: >-
+            bash
+          cache-environment: true
+
+      - name: Get data
+        run: python setup.py --nrows 256 --ncols 500
+        shell: bash -el {0}
+
+      - name: Run benchmark
+        run: python main.py
+        shell: bash -el {0}
