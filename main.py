@@ -55,10 +55,10 @@ def main(path: Path, tobench: list[str], output: str):
     for name, bench in benches.items():
         console.rule(f"[bold]Running '{name}'", align="left")
         with open(output, "a") as f:
-            for i in range(5):
-                time_taken = timeit.Timer(lambda: next(bench)).timeit(3)
-                f.write(f"{name}\t{i}\t{time_taken/3}\n")
-                print(f"Loop {i}: {time_taken/3:01f}s/iter of 3 iterations")
+            for i in range(15):
+                time_taken = timeit.Timer(lambda: next(bench)).timeit(1)
+                f.write(f"{name}\t{i}\t{time_taken}\n")
+                print(f"Loop {i}: {time_taken:01f}s/epoch")
                 next(bench)
 
 
