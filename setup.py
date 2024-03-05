@@ -39,6 +39,7 @@ def main(path: Path, nrows: int | None, ncols: int | None):
     with artifact.backed() as store:
         # ~2GB sparse and ~4.6GB dense stored as h5ad
         adata = store[:nrows, :ncols].to_memory()
+        adata.raw = None
     # %%
     adata.write_h5ad(path / "adata_benchmark_sparse.h5ad")
     adata.write_zarr(path / "adata_benchmark_sparse.zrad")
