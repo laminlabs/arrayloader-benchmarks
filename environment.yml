@@ -1,0 +1,18 @@
+name: lamin
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - loguru
+  - numpy
+  - pandas
+  - pip
+  - polars
+  - pyarrow
+  - rich
+  - scanpy
+  - zarr
+  - pip:
+      - lamindb==0.67.3
+      - rich-click
+      - tiledbsoma==1.7.2
