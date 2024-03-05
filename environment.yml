@@ -15,6 +15,7 @@ dependencies:
   - s3fs
   - scanpy
   - zarr
+  - tensorstore
   - pip:
       - bionty
       - lamindb==0.68

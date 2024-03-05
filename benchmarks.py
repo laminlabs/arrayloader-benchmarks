@@ -7,6 +7,7 @@ import pandas as pd
 import polars as pl
 import pyarrow.dataset
 import pyarrow.parquet
+import tensorstore as ts
 import tiledbsoma as soma
 import zarr
 from anndata._core.sparse_dataset import sparse_dataset
@@ -88,6 +89,69 @@ class Zarr:
         _iterate(self.dataset, self.labels, random, need_sort=False)
 
 
+class ZarrV3TensorstoreSharded:
+    def __init__(self, path, sparse: bool = False):
+        if sparse:
+            raise ValueError(
+                "Tensorstore not working inside AnnData sparse container yet due to lack of Group support."
+            )
+        self.dataset = ts.open(
+            {
+                "driver": "zarr3",
+                "kvstore": {
+                    "driver": "file",
+                    "path": path,
+                },
+            },
+            read=True,
+        ).result()
+        self.labels = ts.open(
+            {
+                "driver": "zarr3",
+                "kvstore": {
+                    "driver": "file",
+                    "path": path.replace("dense", "labels"),
+                },
+            },
+            read=True,
+        ).result()
+
+    def iterate(self, random: bool = False):
+        for batch_idx in index_iter(self.dataset.shape[0], BATCH_SIZE, shuffle=random):
+            batch_X = self.dataset[batch_idx, :].read().result()
+            batch_labels = self.labels[batch_idx].read().result()
+
+
+class ZarrV2Tensorstore:
+    def __init__(self, path, sparse: bool = False):
+        if sparse:
+            raise ValueError(
+                "Tensorstore not working inside AnnData sparse container yet due to lack of Group support."
+            )
+        self.dataset = ts.open(
+            {
+                "driver": "zarr",
+                "kvstore": {
+                    "driver": "file",
+                    "path": f"{path}/X",
+                },
+            },
+            read=True,
+        ).result()
+        self.labels = ts.open(
+            {
+                "driver": "zarr",
+                "kvstore": {"driver": "file", "path": f"{path}/obs/cell_states/codes"},
+            },
+            read=True,
+        ).result()
+
+    def iterate(self, random: bool = False):
+        for batch_idx in index_iter(self.dataset.shape[0], BATCH_SIZE, shuffle=random):
+            batch_X = self.dataset[batch_idx, :].read().result()
+            batch_labels = self.labels[batch_idx].read().result()
+
+
 class Arrow:
     def __init__(self, path, sparse: bool = False):
         if sparse:
@@ -139,7 +203,16 @@ class Polars:
 
 def benchmark(
     path: Path | str,
-    type: Literal["h5py", "zarr", "soma", "arrow", "parquet", "polars"],
+    type: Literal[
+        "h5py",
+        "zarr",
+        "soma",
+        "arrow",
+        "parquet",
+        "polars",
+        "zarrV3tensorstore",
+        "zarrV2tensorstore",
+    ],
     random: bool,
     sparse: bool,
 ):
@@ -155,6 +228,8 @@ def benchmark(
         "arrow": Arrow,
         "parquet": Parquet,
         "polars": Polars,
+        "zarrV3tensorstore": ZarrV3TensorstoreSharded,
+        "zarrV2tensorstore": ZarrV2Tensorstore,
     }
 
     try:

@@ -10,6 +10,8 @@ from benchmarks import benchmark
 
 BATCH_SIZE = 128
 
+logger.info("Initializing")
+
 
 @click.command()
 @click.argument("tobench", type=str, nargs=-1)
@@ -38,6 +40,8 @@ def main(path: Path, tobench: list[str], epochs: int, output: str):
             "parquet_chunk": f"adata_dense_chunk_{BATCH_SIZE}.parquet",
             "arrow": "adata_dense.parquet",
             "arrow_chunk": f"adata_dense_chunk_{BATCH_SIZE}.parquet",
+            "zarrV3tensorstore_dense_chunk": "sharded_dense_chunk.zarr",
+            "zarrV2tensorstore_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad",
         }.items()
     }
     logger.info("Initializing")
