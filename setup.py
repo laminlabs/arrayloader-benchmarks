@@ -1,4 +1,3 @@
-# %%
 from pathlib import Path
 
 import h5py
@@ -7,8 +6,8 @@ import rich_click as click
 import scanpy as sc
 import tensorstore as ts
 import tiledbsoma.io
+from loguru import logger
 
-# %%
 BATCH_SIZE = 128
 
 
