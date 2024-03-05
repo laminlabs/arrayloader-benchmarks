@@ -12,7 +12,7 @@ BATCH_SIZE = 128
 
 
 @click.command()
-@click.option("--path", type=click.Path(exists=True, dir_okay=False), default=".")
+@click.option("--path", type=click.Path(exists=True, dir_okay=False), default=Path("."))
 @click.option("--nrows", type=int, default=-1)
 @click.option("--ncols", type=int, default=5000)
 def main(path: Path, nrows: int | None, ncols: int | None):

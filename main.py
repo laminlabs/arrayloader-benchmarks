@@ -13,7 +13,9 @@ BATCH_SIZE = 128
 
 @click.command()
 @click.argument("tobench", type=str, nargs=-1)
-@click.option("--path", "-p", type=click.Path(exists=True, dir_okay=True), default=".")
+@click.option(
+    "--path", "-p", type=click.Path(exists=True, dir_okay=True), default=Path(".")
+)
 @click.option("--output", "-o", type=str, default="results.tsv")
 def main(path: Path, tobench: list[str], output: str):
     console = rich.get_console()
