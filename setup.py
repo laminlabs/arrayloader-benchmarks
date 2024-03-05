@@ -1,6 +1,4 @@
 # %%
-import subprocess
-
 import h5py
 import lamindb as ln
 import scanpy as sc
@@ -8,7 +6,8 @@ import tiledbsoma.io
 
 # %%
 BATCH_SIZE = 128
-subprocess.run("lamin load laminlabs/arrayloader-benchmarks", shell=True)
+ln.setup.close()
+ln.setup.load("laminlabs/arrayloader-benchmarks")
 artifact = ln.Artifact.filter(uid="z3AsAOO39crEioi5kEaG").one()
 
 # %%

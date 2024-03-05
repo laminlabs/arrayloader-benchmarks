@@ -4,15 +4,19 @@ channels:
 dependencies:
   - python=3.11
   - loguru
+  - notebook
   - numpy
   - pandas
   - pip
   - polars
   - pyarrow
   - rich
+  - s3fs
   - scanpy
   - zarr
   - pip:
-      - lamindb==0.67.3
+      - bionty
+      - lamindb==0.68
+      - lnschema-bionty
       - rich-click
       - tiledbsoma==1.7.2
