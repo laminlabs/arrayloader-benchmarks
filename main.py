@@ -38,7 +38,8 @@ def main(path: Path, tobench: list[str], epochs: int, output: str, test: bool):
         assert ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks"
         # ensure we're authenticated
         assert ln.setup.settings.user.handle != "anonymous"
-    # it'd be nice to track the params of this run in a json now
+
+    # it'd be nice to track the params of this run in a json now, but we can't yet do this
     ln.track()
 
     paths = {
@@ -88,7 +89,7 @@ def main(path: Path, tobench: list[str], epochs: int, output: str, test: bool):
                 print(f"Loop {i}: {time_taken:01f}s/epoch")
                 next(bench)
 
-    ln.Artifact(output, description="Sample batches across array backends").save()
+    ln.Artifact(output, key=f"cli_runs/{output}").save()
 
 
 if __name__ == "__main__":
