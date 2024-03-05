@@ -5,8 +5,11 @@ from pathlib import Path
 import rich
 import rich_click as click
 from loguru import logger
-
+import lamindb as ln
 from benchmarks import benchmark
+
+ln.transform.stem_uid = "Mf5gs9ezJCrI"
+ln.transform.version = "1"
 
 BATCH_SIZE = 128
 
@@ -25,6 +28,11 @@ logger.info("Initializing")
 @click.option("--output", "-o", type=str, default="results.tsv")
 def main(path: Path, tobench: list[str], epochs: int, output: str):
     console = rich.get_console()
+
+    # ensure we're tracking production runs in the correct instance
+    assert ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks"
+    # it'd be nice to track the params of this run in a json now
+    ln.track()
 
     paths = {
         name: path / filename
@@ -72,6 +80,8 @@ def main(path: Path, tobench: list[str], epochs: int, output: str):
                 f.write(f"{name}\t{i}\t{time_taken}\n")
                 print(f"Loop {i}: {time_taken:01f}s/epoch")
                 next(bench)
+
+    ln.Artifact(output, description="Sample batches across array backends").save()
 
 
 if __name__ == "__main__":
