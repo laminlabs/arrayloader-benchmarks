@@ -41,17 +41,21 @@ def main(path: Path, tobench: list[str], epochs: int, output: str):
         }.items()
     }
     logger.info("Initializing")
+
     benches = {}
     for name, path in paths.items():
-        benches[name] = benchmark(path, name.split("_")[0], False, "sp" in name)
+        benches[name] = benchmark(
+            path, name.split("_")[0], random=False, sparse="sp" in name
+        )
         next(benches[name])
+
         try:
-            benches[name + "_rand"] = benchmark(
-                path, name.split("_")[0], True, "sp" in name
-            )
+            b = benchmark(path, name.split("_")[0], random=True, sparse="sp" in name)
             next(benches[name + "_rand"])
+            benches[name + "_rand"] = b
         except ValueError:
             ...
+        logger.info("Initialized " + name)
 
     if tobench and "all" not in tobench:
         benches = {k: v for k, v in benches.items() if k in tobench}
