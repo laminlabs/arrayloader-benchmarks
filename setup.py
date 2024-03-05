@@ -3,7 +3,7 @@ import h5py
 import lamindb as ln
 import scanpy as sc
 import tiledbsoma.io
-
+import tensorstore as ts
 # %%
 BATCH_SIZE = 128
 ln.setup.close()
@@ -67,3 +67,48 @@ df_X_labels.to_parquet(
     compression=None,
     row_group_size=BATCH_SIZE,
 )
+
+# %%
+# save to tensorstore
+sharded_dense_chunk = ts.open(
+    {
+        'driver': 'zarr3',
+        'kvstore': 'file://sharded_dense_chunk.zarr',
+        'metadata': {
+            "shape": adata.shape,
+            "chunk_grid": {"name": "regular", "configuration": {"chunk_shape": [BATCH_SIZE, adata.shape[1]]}},
+            "chunk_key_encoding": {"name": "default"},
+            "codecs": [{
+            "name": "sharding_indexed",
+                "configuration": {
+                "chunk_shape": [32, adata.shape[1]],
+                "codecs": [{"name":"blosc"}]
+            }}],
+        },
+        "dtype": 'float32',
+        'create': True,
+        'delete_existing': True,
+    }, write=True).result()
+
+sharded_labels = ts.open(
+    {
+        'driver': 'zarr3',
+        'kvstore': 'file://sharded_labels_chunk.zarr',
+        'metadata': {
+            "shape": (adata.shape[0], ),
+            "chunk_grid": {"name": "regular", "configuration": {"chunk_shape": (10000,)}},
+            "chunk_key_encoding": {"name": "default"},
+            "codecs": [{
+            "name": "sharding_indexed",
+                "configuration": {
+                "chunk_shape": (1000,),
+                "codecs": [{"name":"blosc"}]
+            }}],
+        },
+        "dtype": 'int8',
+        'create': True,
+        'delete_existing': True,
+    }, write=True).result()
+
+sharded_dense_chunk[:, :] = adata.X
+sharded_labels[:] = adata.obs['cell_states'].cat.codes.values

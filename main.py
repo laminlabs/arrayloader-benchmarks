@@ -21,6 +21,8 @@ paths = {
     "parquet_chunk": f"adata_dense_chunk_{BATCH_SIZE}.parquet",
     "arrow": "adata_dense.parquet",
     "arrow_chunk": f"adata_dense_chunk_{BATCH_SIZE}.parquet",
+    "zarrV3tensorstore_dense_chunk": "sharded_dense_chunk.zarr",
+    "zarrV2tensorstore_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad"
 }
 logger.info("Initializing")
 
