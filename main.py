@@ -19,8 +19,9 @@ BATCH_SIZE = 128
     type=click.Path(exists=True, dir_okay=True, file_okay=False),
     default=Path("."),
 )
+@click.option("--epochs", type=int, default=4)
 @click.option("--output", "-o", type=str, default="results.tsv")
-def main(path: Path, tobench: list[str], output: str):
+def main(path: Path, tobench: list[str], epochs: int, output: str):
     console = rich.get_console()
 
     paths = {
@@ -58,7 +59,7 @@ def main(path: Path, tobench: list[str], output: str):
     for name, bench in benches.items():
         console.rule(f"[bold]Running '{name}'", align="left")
         with open(output, "a") as f:
-            for i in range(15):
+            for i in range(epochs):
                 time_taken = timeit.Timer(lambda: next(bench)).timeit(1)
                 f.write(f"{name}\t{i}\t{time_taken}\n")
                 print(f"Loop {i}: {time_taken:01f}s/epoch")
