@@ -143,3 +143,7 @@ def main(path: Path, nrows: int | None, ncols: int | None):
 
     sharded_dense_chunk[:, :] = adata.X
     sharded_labels[:] = adata.obs["cell_states"].cat.codes.values
+
+
+if __name__ == "__main__":
+    main()
