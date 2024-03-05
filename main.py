@@ -26,11 +26,14 @@ logger.info("Initializing")
 )
 @click.option("--epochs", type=int, default=4)
 @click.option("--output", "-o", type=str, default="results.tsv")
-@click.option("--test", type=bool, default=False)
+@click.option("--test", is_flag=True, type=bool, default=False)
 def main(path: Path, tobench: list[str], epochs: int, output: str, test: bool):
     console = rich.get_console()
 
-    if not test:
+    if test:
+        # ensure we're tracking test runs outside of the production instance
+        assert ln.setup.settings.instance.identifier != "laminlabs/arrayloader-benchmarks"
+    else:
         # ensure we're tracking production runs in the correct instance
         assert ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks"
         # ensure we're authenticated

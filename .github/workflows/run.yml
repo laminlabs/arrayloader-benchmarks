@@ -32,5 +32,5 @@ jobs:
         shell: bash -el {0}
 
       - name: Run benchmark
-        run: python main.py
+        run: python main.py --test
         shell: bash -el {0}
