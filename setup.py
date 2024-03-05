@@ -4,8 +4,9 @@ import subprocess
 import h5py
 import lamindb as ln
 import scanpy as sc
-import tiledbsoma as soma
+import tiledbsoma.io
 
+# %%
 BATCH_SIZE = 128
 subprocess.run("lamin load laminlabs/arrayloader-benchmarks", shell=True)
 artifact = ln.Artifact.filter(uid="z3AsAOO39crEioi5kEaG").one()
@@ -25,7 +26,7 @@ adata.write_h5ad("adata_benchmark_sparse.h5ad")
 adata.write_zarr("adata_benchmark_sparse.zrad")
 
 # %%
-soma.io.from_h5ad(
+tiledbsoma.io.from_h5ad(
     "adata_benchmark_sparse.soma",
     input_path="adata_benchmark_sparse.h5ad",
     measurement_name="RNA",
