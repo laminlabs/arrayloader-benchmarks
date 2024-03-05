@@ -31,6 +31,8 @@ def main(path: Path, tobench: list[str], epochs: int, output: str):
 
     # ensure we're tracking production runs in the correct instance
     assert ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks"
+    # ensure we're authenticated
+    assert ln.setup.settings.user.handle != "anonymous"    
     # it'd be nice to track the params of this run in a json now
     ln.track()
 
