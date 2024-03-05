@@ -45,7 +45,7 @@ class Soma:
         self.labels = self.file["obs"]
 
     def iterate(self, random: bool = False):
-        n_obs, n_vars = len(self.labels), len(self.dataset["ms"]["RNA"]["var"])
+        n_obs, n_vars = len(self.labels), len(self.file["ms"]["RNA"]["var"])
         for batch_idx in index_iter(n_obs, BATCH_SIZE, shuffle=random):
             batch_X = (
                 self.dataset.read([batch_idx])
