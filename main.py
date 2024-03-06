@@ -5,8 +5,11 @@ from pathlib import Path
 import rich
 import rich_click as click
 from loguru import logger
-
+import lamindb as ln
 from benchmarks import benchmark
+
+ln.transform.stem_uid = "Mf5gs9ezJCrI"
+ln.transform.version = "1"
 
 BATCH_SIZE = 128
 
@@ -23,8 +26,18 @@ logger.info("Initializing")
 )
 @click.option("--epochs", type=int, default=4)
 @click.option("--output", "-o", type=str, default="results.tsv")
-def main(path: Path, tobench: list[str], epochs: int, output: str):
+@click.option("--test", "is_test", is_flag=True, type=bool, default=False, help="Tell Lamin that we're testing")
+def main(path: Path, tobench: list[str], epochs: int, output: str, is_test: bool):
     console = rich.get_console()
+
+    # Lamin checks
+    is_production_instance = (ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks")
+    assert is_test != is_production_instance, "You're trying to run a test on the production instance"
+    if not is_test:
+        assert ln.setup.settings.user.handle != "anonymous"
+
+    # it'd be nice to track the params of this run in a json now, but we can't yet do this
+    ln.track()
 
     paths = {
         name: path / filename
@@ -72,6 +85,8 @@ def main(path: Path, tobench: list[str], epochs: int, output: str):
                 f.write(f"{name}\t{i}\t{time_taken}\n")
                 print(f"Loop {i}: {time_taken:01f}s/epoch")
                 next(bench)
+
+    ln.Artifact(output, key=f"cli_runs/{output}").save()
 
 
 if __name__ == "__main__":
