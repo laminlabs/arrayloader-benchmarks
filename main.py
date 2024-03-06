@@ -26,17 +26,14 @@ logger.info("Initializing")
 )
 @click.option("--epochs", type=int, default=4)
 @click.option("--output", "-o", type=str, default="results.tsv")
-@click.option("--test", is_flag=True, type=bool, default=False)
-def main(path: Path, tobench: list[str], epochs: int, output: str, test: bool):
+@click.option("--test", "is_test", is_flag=True, type=bool, default=False, help="Tell Lamin that we're testing")
+def main(path: Path, tobench: list[str], epochs: int, output: str, is_test: bool):
     console = rich.get_console()
 
-    if test:
-        # ensure we're tracking test runs outside of the production instance
-        assert ln.setup.settings.instance.identifier != "laminlabs/arrayloader-benchmarks"
-    else:
-        # ensure we're tracking production runs in the correct instance
-        assert ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks"
-        # ensure we're authenticated
+    # Lamin checks
+    is_production_instance = (ln.setup.settings.instance.identifier == "laminlabs/arrayloader-benchmarks")
+    assert is_test != is_production_instance, "You're trying to run a test on the production instance"
+    if not is_test:
         assert ln.setup.settings.user.handle != "anonymous"
 
     # it'd be nice to track the params of this run in a json now, but we can't yet do this
