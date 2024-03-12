@@ -1,7 +1,7 @@
 import lamindb as ln
 
 ln.transform.stem_uid = "Md9ea0bLFozt"
-ln.transform.version = "1"
+ln.transform.version = "2"
 
 import merlin.io
 from merlin.dataloader.torch import Loader
@@ -75,7 +75,7 @@ def benchmark(loader, n_samples = None):
     return samples_per_sec, time_per_sample, batch_times
 
 results = {"Merlin": {}, "MappedCollection": {}, "cellxgene_census": {}}
-for epoch in range(3):
+for epoch in range(5):
     for k in results:
         results[k][f"epoch_{epoch}"] = {}
 
@@ -105,7 +105,7 @@ loader = Loader(
 ).epochs(1)
 
 print("Merlin")
-for epoch in range(3):
+for epoch in range(5):
     samples_per_sec, time_per_sample, batch_times = benchmark(loader)
     results["Merlin"][f"epoch_{epoch}"]["time_per_sample"] = time_per_sample
     results["Merlin"][f"epoch_{epoch}"]["samples_per_sec"] = samples_per_sec
@@ -127,7 +127,7 @@ loader = DataLoader(
 )
 
 print("MappedCollection")
-for epoch in range(3):
+for epoch in range(5):
     samples_per_sec, time_per_sample, batch_times = benchmark(loader)
     results["MappedCollection"][f"epoch_{epoch}"]["time_per_sample"] = time_per_sample
     results["MappedCollection"][f"epoch_{epoch}"]["samples_per_sec"] = samples_per_sec
@@ -159,7 +159,7 @@ experiment_datapipe = census_ml.ExperimentDataPipe(
 loader = census_ml.experiment_dataloader(experiment_datapipe)
 
 print("cellxgene_census")
-for epoch in range(3):
+for epoch in range(5):
     samples_per_sec, time_per_sample, batch_times = benchmark(loader, n_samples=experiment_datapipe.shape[0])
     results["cellxgene_census"][f"epoch_{epoch}"]["time_per_sample"] = time_per_sample
     results["cellxgene_census"][f"epoch_{epoch}"]["samples_per_sec"] = samples_per_sec
@@ -169,10 +169,10 @@ census.close()
 
 # Save results
     
-with open("merlin_mapped_epochs.json", mode="w") as file:
+with open("merlin_mapped_census_epochs.json", mode="w") as file:
     file.write(json.dumps(results))
 
 ln.Artifact(
-    "merlin_mapped_epochs.json", 
-    description="Results of Merlin and MappedCollection benchmarking for 3 epochs"
+    "merlin_mapped_census_epochs.json", 
+    description="Results of Merlin, MappedCollection and Census benchmarking for 5 epochs"
 ).save()
