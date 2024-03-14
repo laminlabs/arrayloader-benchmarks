@@ -1,7 +1,7 @@
 import lamindb as ln
 
 ln.settings.transform.stem_uid = "beoXrr2SDS7R"
-ln.settings.transform.version = "1"
+ln.settings.transform.version = "2"
 
 if __name__ == "__main__":
 
