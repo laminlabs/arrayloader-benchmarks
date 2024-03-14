@@ -12,3 +12,5 @@ if __name__ == "__main__":
 
     summary_stats = df.groupby("method").mean()
     print(summary_stats)
+
+    ln.Artifact(summary_stats, description="Summary stats").save()
