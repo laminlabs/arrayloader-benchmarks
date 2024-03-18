@@ -396,7 +396,7 @@ def run_benchmarks(*, epochs: int) -> None:
 
     benches = {}
     for name, path in paths.items():
-        benches[name] = benchmark(
+        benches[name] = run_benchmark(
             path, name.split("_")[0], random=False, sparse="sp" in name
         )
         next(benches[name])
