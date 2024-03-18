@@ -1,4 +1,7 @@
-# benchmark
+# `arrayloader-benchmarks`
 
-1. Run `setup.py` to download and prepare the data.
-2. Run `main.py` to run the benchmark. The results are saved in `results.tsv`. (5 runs, 3 loops each).
+This repo contains benchmarking scripts accompanying the blog post: [lamin.ai/blog/arrayloader-benchmarks](https://lamin.ai/blog/arrayloader-benchmarks)
+
+See
+[lamin.ai/laminlabs/arrayloader-benchmarks](https://lamin.ai/laminlabs/arrayloader-benchmarks)
+for artifacts, benchmarking runs, and additional notebooks.
