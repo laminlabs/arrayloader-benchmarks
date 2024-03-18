@@ -170,6 +170,9 @@ def run_benchmarks(path: Path, output: str, epochs: int):
 
 
 if __name__ == "__main__":
+    ln.settings.transform.stem_uid = "r9vQub7PWucj"
+    ln.settings.transform.version = "1"
+    
     ln.track()
 
     artifact = ln.Artifact.filter(uid="z3AsAOO39crEioi5kEaG").one()
