@@ -23,14 +23,10 @@ jobs:
             bash
           cache-environment: true
 
-      - name: Get data
-        run: python setup.py --nrows 256 --ncols 500
-        shell: bash -el {0}
-
       - name: Set up a test instance to track run
         run: lamin init --storage ./testdb
         shell: bash -el {0}
 
       - name: Run benchmark
-        run: python main.py --test
+        run: python figure_2_iteration_benchmark.py --test
         shell: bash -el {0}

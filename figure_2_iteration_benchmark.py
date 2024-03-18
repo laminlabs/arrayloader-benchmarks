@@ -1,3 +1,4 @@
+import rich_click as click
 import lamindb as ln
 import scanpy as sc
 import h5py
@@ -12,23 +13,30 @@ from pathlib import Path
 
 
 BATCH_SIZE = 128
+ln.settings.transform.stem_uid = "r9vQub7PWucj"
+ln.settings.transform.version = "1"
 
 
-def write_data(path: Path, adata: AnnData):
-    # %%
+
+def convert_adata_to_different_formats(adata: AnnData) -> None:
+    path: Path = Path.cwd()
+
+    # Sparse formats
+
+    # HDF5 and ZARR
     adata.write_h5ad(path / "adata_benchmark_sparse.h5ad")
     adata.write_zarr(path / "adata_benchmark_sparse.zrad")
 
-    # %%
+    # tiledbsoma
     tiledbsoma.io.from_h5ad(
         (path / "adata_benchmark_sparse.soma").as_posix(),
         input_path=(path / "adata_benchmark_sparse.h5ad").as_posix(),
         measurement_name="RNA",
     )
 
-    # %% Dense onwards
-    adata.X = adata.X.toarray()
+    # Dense formats
 
+    adata.X = adata.X.toarray()
     adata.write_h5ad(path / "adata_benchmark_dense.h5ad")
     adata.write_zarr(path / "adata_benchmark_dense.zrad")
     adata.write_zarr(
@@ -36,8 +44,7 @@ def write_data(path: Path, adata: AnnData):
         chunks=(BATCH_SIZE, adata.X.shape[1]),
     )
 
-    # %%
-    # save h5 with dense chunked X, no way to do it with adata.write_h5ad
+    # Save h5 with dense chunked X, no way to do it with adata.write_h5ad
     with h5py.File(path / f"adata_dense_chunk_{BATCH_SIZE}.h5", mode="w") as f:
         f.create_dataset(
             "adata",
@@ -49,10 +56,10 @@ def write_data(path: Path, adata: AnnData):
         labels = adata.obs.cell_states.cat.codes.to_numpy()
         f.create_dataset("labels", labels.shape, data=labels)
 
-    # %%
     df_X_labels = sc.get.obs_df(adata, keys=adata.var_names.to_list() + ["cell_states"])
 
-    # %%
+    # Parquet
+
     # default row groups
     df_X_labels.to_parquet(path / "adata_dense.parquet", compression=None)
     df_X_labels.to_parquet(
@@ -60,6 +67,8 @@ def write_data(path: Path, adata: AnnData):
         compression=None,
         row_group_size=BATCH_SIZE,
     )
+
+    # tensorstore
 
     sharded_dense_chunk = ts.open(
         {
@@ -121,11 +130,11 @@ def write_data(path: Path, adata: AnnData):
     sharded_labels[:] = adata.obs["cell_states"].cat.codes.values
 
 
-def run_benchmarks(path: Path, output: str, epochs: int):
-    console = rich.get_console()
+def run_benchmarks(*, epochs: int) -> None:
+    main_path: Path = Path.cwd()
 
     paths = {
-        name: path / filename
+        name: main_path / filename
         for name, filename in {
             "h5py_sp": "adata_benchmark_sparse.h5ad",
             "soma_sp": "adata_benchmark_sparse.soma",
@@ -142,9 +151,6 @@ def run_benchmarks(path: Path, output: str, epochs: int):
             "zarrV2tensorstore_dense_chunk": f"adata_benchmark_dense_chunk_{BATCH_SIZE}.zrad",
         }.items()
     }
-    logger.info("Initializing")
-
-    main_path = path
 
     benches = {}
     for name, path in paths.items():
@@ -161,9 +167,11 @@ def run_benchmarks(path: Path, output: str, epochs: int):
             ...
         logger.info("Initialized " + name)
 
+    results_filename = "results.tsv"
+    console = rich.get_console()
     for name, bench in benches.items():
         console.rule(f"[bold]Running '{name}'", align="left")
-        with open(main_path / output, "a") as f:
+        with open(main_path / results_filename, "a") as f:
             for i in range(epochs):
                 time_taken = timeit.Timer(lambda: next(bench)).timeit(1)
                 f.write(f"{name}\t{i}\t{time_taken}\n")
@@ -171,27 +179,39 @@ def run_benchmarks(path: Path, output: str, epochs: int):
                 next(bench)
 
 
-if __name__ == "__main__":
-    ln.settings.transform.stem_uid = "r9vQub7PWucj"
-    ln.settings.transform.version = "1"
 
+@click.command()
+@click.option("--test", "is_test", is_flag=True, type=bool, default=False, help="Tell Lamin that we're testing")
+def main(is_test: bool = True):
+
+    is_production_db = (ln.setup.settings.instance.slug == "laminlabs/arrayloader-benchmarks")
+    assert is_test != is_production_db, "You're trying to run a test on the production database"
+    if not is_test:
+        assert ln.setup.settings.user.handle != "anonymous"
+
+    # track script
     ln.track()
 
-    artifact = ln.Artifact.filter(uid="z3AsAOO39crEioi5kEaG").one()
-    logger.info("Artifact: {}", artifact)
+    # load input data
+    artifact = ln.Artifact.using("laminlabs/arrayloader-benchmarks").filter(uid="z3AsAOO39crEioi5kEaG").one()
 
-    # we will save in different formats, so no need to cache
-    logger.info("Loading data from S3")
-    with artifact.backed() as store:
-        adata = store[:, :5000].to_memory()
-        adata.raw = None
+    # subset to 5k genes and less for test runs
+    nrows = 256 if is_test else None
+    ncols = 500 if is_test else 5000
 
-    path = Path.cwd()
+    with artifact.backed() as adata:
+        adata_subset = adata[:nrows, :ncols].to_memory()
+        adata_subset.raw = None
 
-    write_data(path, adata)
-    output = "results.tsv"
-    run_benchmarks(path, output, 4)
+    # convert data
+    convert_adata_to_different_formats(adata_subset)
 
-    ln.Artifact(output, key=f"cli_runs/{output}").save()
+    # run benchmarks
+    run_benchmarks(epochs=4)
 
+    # finish run
     ln.finish()
+
+
+if __name__ == "__main__":
+    main()
