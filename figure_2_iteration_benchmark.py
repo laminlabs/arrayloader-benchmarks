@@ -144,6 +144,8 @@ def run_benchmarks(path: Path, output: str, epochs: int):
     }
     logger.info("Initializing")
 
+    main_path = path
+
     benches = {}
     for name, path in paths.items():
         benches[name] = benchmark(
@@ -161,7 +163,7 @@ def run_benchmarks(path: Path, output: str, epochs: int):
 
     for name, bench in benches.items():
         console.rule(f"[bold]Running '{name}'", align="left")
-        with open(path / output, "a") as f:
+        with open(main_path / output, "a") as f:
             for i in range(epochs):
                 time_taken = timeit.Timer(lambda: next(bench)).timeit(1)
                 f.write(f"{name}\t{i}\t{time_taken}\n")
@@ -172,7 +174,7 @@ def run_benchmarks(path: Path, output: str, epochs: int):
 if __name__ == "__main__":
     ln.settings.transform.stem_uid = "r9vQub7PWucj"
     ln.settings.transform.version = "1"
-    
+
     ln.track()
 
     artifact = ln.Artifact.filter(uid="z3AsAOO39crEioi5kEaG").one()
