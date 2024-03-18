@@ -8,7 +8,6 @@ import tensorstore as ts
 import tiledbsoma.io
 import rich
 import timeit
-from benchmarks import benchmark
 from anndata import AnnData
 from loguru import logger
 from pathlib import Path
