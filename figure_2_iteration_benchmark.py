@@ -14,7 +14,7 @@ from pathlib import Path
 BATCH_SIZE = 128
 
 
-def write_data(adata: AnnData, path: Path):
+def write_data(path: Path, adata: AnnData):
     # %%
     adata.write_h5ad(path / "adata_benchmark_sparse.h5ad")
     adata.write_zarr(path / "adata_benchmark_sparse.zrad")
