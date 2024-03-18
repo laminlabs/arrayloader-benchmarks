@@ -18,7 +18,7 @@ dependencies:
   - tensorstore
   - pip:
       - bionty
-      - lamindb==0.68
+      - lamindb==0.69
       - lnschema-bionty
       - rich-click
       - tiledbsoma==1.7.2
