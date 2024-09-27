@@ -88,7 +88,7 @@ class Soma:
 class H5py:
     def __init__(self, path, sparse: bool = False):
         self.file = h5py.File(path, mode="r")
-        self.dataset = ad.experimental.read_elem_as_dask(self.file["X"]) if sparse else self.file["X"]
+        self.dataset = ad.experimental.read_elem_as_dask(self.file["X"])
         self.labels = self.file["obs"]["cell_states"]["codes"]
 
     def iterate(self, random: bool = False):
@@ -98,7 +98,7 @@ class H5py:
 class Zarr:
     def __init__(self, path, sparse: bool = False):
         self.file = zarr.open(path)
-        self.dataset = ad.experimental.read_elem_as_dask(self.file["X"]) if sparse else self.file["X"]
+        self.dataset = ad.experimental.read_elem_as_dask(self.file["X"])
         self.labels = self.file["obs"]["cell_states"]["codes"]
 
     def iterate(self, random: bool = False):
