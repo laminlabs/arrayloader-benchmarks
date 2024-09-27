@@ -459,4 +459,6 @@ def main(is_test: bool = True):
 
 
 if __name__ == "__main__":
+    cluster = LocalCluster()
+    client = Client(cluster)
     main()
