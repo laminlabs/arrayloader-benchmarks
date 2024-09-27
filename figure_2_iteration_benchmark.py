@@ -18,8 +18,11 @@ import pyarrow.dataset
 import pyarrow.parquet
 import tiledbsoma as soma
 import zarr
-from anndata._core.sparse_dataset import sparse_dataset
+import anndata as ad
+from dask.distributed import Client, LocalCluster
 
+cluster = LocalCluster()
+client = Client(cluster)
 
 BATCH_SIZE = 128
 ln.settings.transform.stem_uid = "r9vQub7PWucj"
@@ -52,7 +55,7 @@ def _iterate(dataset, h5labels, random: bool = False, need_sort: bool = False):
     for batch_idx in index_iter(dataset.shape[0], BATCH_SIZE, shuffle=random):
         if random and need_sort:
             batch_idx.sort()
-        batch_X = dataset[batch_idx, :]
+        batch_X = dataset[batch_idx, :].compute()
         batch_labels = h5labels[batch_idx]
 
 
@@ -85,7 +88,7 @@ class Soma:
 class H5py:
     def __init__(self, path, sparse: bool = False):
         self.file = h5py.File(path, mode="r")
-        self.dataset = sparse_dataset(self.file["X"]) if sparse else self.file["X"]
+        self.dataset = ad.experimental.read_elem_as_dask(self.file["X"])
         self.labels = self.file["obs"]["cell_states"]["codes"]
 
     def iterate(self, random: bool = False):
@@ -95,7 +98,7 @@ class H5py:
 class Zarr:
     def __init__(self, path, sparse: bool = False):
         self.file = zarr.open(path)
-        self.dataset = sparse_dataset(self.file["X"]) if sparse else self.file["X"]
+        self.dataset = ad.experimental.read_elem_as_dask(self.file["X"])
         self.labels = self.file["obs"]["cell_states"]["codes"]
 
     def iterate(self, random: bool = False):
@@ -456,4 +459,6 @@ def main(is_test: bool = True):
 
 
 if __name__ == "__main__":
+    cluster = LocalCluster()
+    client = Client(cluster)
     main()
