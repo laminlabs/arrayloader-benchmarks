@@ -20,9 +20,8 @@ import tiledbsoma as soma
 import zarr
 import anndata as ad
 from dask.distributed import Client, LocalCluster
-import os
 
-cluster = LocalCluster(n_workers=os.cpu_count())
+cluster = LocalCluster()
 client = Client(cluster)
 
 BATCH_SIZE = 128
