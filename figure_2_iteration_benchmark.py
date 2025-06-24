@@ -22,8 +22,6 @@ from anndata._core.sparse_dataset import sparse_dataset
 
 
 BATCH_SIZE = 128
-ln.settings.transform.stem_uid = "r9vQub7PWucj"
-ln.settings.transform.version = "1"
 
 
 def index_iter(n_obs, batch_size, shuffle=True):
@@ -431,11 +429,11 @@ def main(is_test: bool = True):
     if not is_test:
         assert ln.setup.settings.user.handle != "anonymous"
 
-    # track script
-    ln.track()
+    # track run of script
+    ln.track("r9vQub7PWucj")
 
     # load input data
-    artifact = ln.Artifact.using("laminlabs/arrayloader-benchmarks").filter(uid="z3AsAOO39crEioi5kEaG").one()
+    artifact = ln.Artifact.using("laminlabs/arrayloader-benchmarks").get("z3AsAOO39crEioi5kEaG")
 
     # subset to 5k genes and less for test runs
     nrows = 256 if is_test else None
