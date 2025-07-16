@@ -1,0 +1,13 @@
+[envs.default]
+installer = "uv"
+features = [ "test" ]
+
+[envs.arrayloaders]
+features = [ "arrayloaders" ]
+scripts.generate_data = "echo TODO"
+scripts.benchmark = "echo {args}"
+
+[envs.hatch-test]
+default-args = [  ]
+features = [ "test" ]
+extra-dependencies = [ "ipykernel" ]
