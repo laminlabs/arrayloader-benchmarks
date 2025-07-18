@@ -1,0 +1,39 @@
+defaults:
+  - sweep
+
+store_path: "/dss/mcmlscratch/04/di93zer"
+
+# configs for dense
+n_shards_input:
+  - 10
+gene_space:
+  - PROTEIN_CODING
+should_densify:
+  - true
+zarr_chunk_size:
+  - 1
+  - 64
+  - 256
+  - 1024
+zarr_shard_size:
+  - 65536
+anndata_shard_size:
+  - 2097152
+  - 10485760
+
+# configs for sparse
+#n_shards_input:
+#  - 10
+#gene_space:
+#  - PROTEIN_CODING
+#should_densify:
+#  - false
+#zarr_chunk_size:
+#  - 2048
+#  - 32768
+#  - 1048576
+#zarr_shard_size:
+#  - 65536
+#anndata_shard_size:
+#  - 2097152
+#  - 10485760

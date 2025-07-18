@@ -1,0 +1,21 @@
+defaults:
+  - sweep
+
+store_path: "/dss/mcmlscratch/04/di93zer"
+store_type:
+  - SPARSE
+  - DENSE
+n_samples: -1
+batch_size:
+  - 1024
+  - 2048
+use_torch_loader: true
+chunk_size:
+  - 512
+  - 1024
+preload_nchunks:
+  - 8
+  - 16
+num_workers:
+  - 4
+  - 8
