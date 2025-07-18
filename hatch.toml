@@ -4,7 +4,7 @@ features = [ "test" ]
 
 [envs.arrayloaders]
 features = [ "arrayloaders" ]
-scripts.generate_data = "echo TODO"
+scripts.generate_data = "benchmark_store {args}"
 scripts.benchmark = "echo {args}"
 
 [envs.hatch-test]

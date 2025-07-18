@@ -33,6 +33,11 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
+dependencies = [
+    "hydra-core>=1.3",
+]
+[project.scripts]
+benchmark_store = "arrayloader_benchmarks:benchmark_store"
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -40,7 +45,8 @@ allow-direct-references = true
 [project.optional-dependencies]
 arrayloaders = [
     # Likely an editable install in real usage
-    "arrayloaders@git+https://github.com/laminlabs/arrayloaders"
+    "arrayloaders@git+https://github.com/laminlabs/arrayloaders",
+    "zarrs>=0.2"
 ]
 test = [ "pytest", "pytest-xdist" ]
 
