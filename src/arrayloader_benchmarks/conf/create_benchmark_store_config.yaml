@@ -1,5 +1,27 @@
 defaults:
-  - sweep
+  - benchmark_store_config
+  - _self_
+
+
+hydra:
+  mode: MULTIRUN
+  launcher:
+    _target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher
+    partition: mcml-hgx-a100-80x4-mig
+    qos: mcml
+    cpus_per_task: 12
+    mem: 200GB
+    gres: gpu:1
+    time: 2-00:00:00
+    container: enroot
+    container_image: "/dss/dsshome1/04/di93zer/dssfs02/enroot-images/arrayloaders.sqsh"
+    container_mounts:
+      - "/dss:/dss"
+    additional_parameters:
+      job_name: zarr_benchmark
+      output: logs/slurm-%j.out
+      error: logs/slurm-%j.err
+
 
 store_path: "/dss/mcmlscratch/04/di93zer"
 
