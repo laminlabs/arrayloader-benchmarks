@@ -12,6 +12,7 @@ should_densify:
   - true
 zarr_chunk_size:
   - 1
+  - 8
   - 64
   - 256
   - 1024
@@ -29,11 +30,12 @@ anndata_shard_size:
 #should_densify:
 #  - false
 #zarr_chunk_size:
+#  - 1024
 #  - 2048
 #  - 32768
 #  - 1048576
 #zarr_shard_size:
-#  - 65536
+#  - 134217728
 #anndata_shard_size:
 #  - 2097152
 #  - 10485760
