@@ -35,7 +35,7 @@ def create_results_table(db_path: Path):
     cursor = conn.cursor()
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS benchmarks (
+        CREATE TABLE IF NOT EXISTS results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             store_path TEXT NOT NULL,
             store_type TEXT NOT NULL,

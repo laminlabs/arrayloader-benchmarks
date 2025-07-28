@@ -3,20 +3,14 @@ from __future__ import annotations
 import sqlite3
 import time
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Literal
 
 import anndata as ad
-import hydra
+import click
 import scipy.sparse as sp
 import zarr
 import zarrs  # noqa
 from arrayloaders.io import ZarrDenseDataset, ZarrSparseDataset
-from hydra.core.config_store import ConfigStore
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -49,71 +43,116 @@ def benchmark(loader, n_samples, batch_size):
     return samples_per_sec, time_per_sample, batch_times
 
 
-@dataclass
-class BenchmarkConfig:
-    store_path: str
-    store_type: Literal["SPARSE", "DENSE"]
-    n_samples: int = -1
-    batch_size: int = 2048
-    use_torch_loader: bool = True
-    chunk_size: int = 1024
-    preload_nchunks: int = 8
-    num_workers: int = 4
+def get_store_hash(
+    gene_space: str = "PROTEIN_CODING",
+    zarr_chunk_size: int = 2048,
+    zarr_shard_size: int = 65536,
+    anndata_shard_size: int = 2**21,
+    should_densify: bool = True,  # noqa: FBT001, FBT002
+):
+    store_type = "DENSE" if should_densify else "SPARSE"
+    return str(
+        hash(
+            (
+                store_type,
+                gene_space,
+                zarr_chunk_size,
+                zarr_shard_size,
+                anndata_shard_size,
+            )
+        )
+    )
 
 
-ConfigStore.instance().store(name="benchmark_store_config", node=BenchmarkConfig)
-
-
-@hydra.main(version_base=None, config_path="conf", config_name="benchmark_store_config")
-def benchmark_store(cfg: BenchmarkConfig):
-    store_path = Path(cfg.store_path)
+@click.command()
+@click.option("--store_path", type=str)
+@click.option("--gene_space", type=str)
+@click.option("--zarr_chunk_size", type=int, default=2048)
+@click.option("--zarr_shard_size", type=int, default=65536)
+@click.option("--anndata_shard_size", type=int, default=2**21)
+@click.option("--should_densify", type=bool, default=True)
+@click.option("--chunk_size", type=int, default=512)
+@click.option("--preload_nchunks", type=int, default=16)
+@click.option("--use_torch_loader", type=bool, default=True)
+@click.option("--num_workers", type=int, default=4)
+@click.option("--batch_size", type=int, default=2048)
+@click.option("--n_samples", type=int, default=-1)
+def benchmark_store(  # noqa: PLR0913, PLR0917
+    store_path: str,
+    gene_space: str = "PROTEIN_CODING",
+    zarr_chunk_size: int = 2048,
+    zarr_shard_size: int = 65536,
+    anndata_shard_size: int = 2**21,
+    should_densify: bool = True,  # noqa: FBT001, FBT002
+    chunk_size: int = 512,
+    preload_nchunks: int = 16,
+    use_torch_loader: bool = True,  # noqa: FBT001, FBT002
+    num_workers: int = 4,
+    batch_size: int = 2048,
+    n_samples: int = -1,
+):
+    store_path = Path(store_path)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        if cfg.store_type == "SPARSE":
+        if not should_densify:
             ds = ZarrSparseDataset(
                 shuffle=True,
-                chunk_size=cfg.chunk_size,
-                preload_nchunks=cfg.preload_nchunks,
+                chunk_size=chunk_size,
+                preload_nchunks=preload_nchunks,
+                batch_size=1 if use_torch_loader else batch_size,
             )
             collate_fn = lambda x: sp.vstack([v[0] for v in x])
-        elif cfg.store_type == "DENSE":
+        else:
             ds = ZarrDenseDataset(
                 shuffle=True,
-                chunk_size=cfg.chunk_size,
-                preload_nchunks=cfg.preload_nchunks,
+                chunk_size=chunk_size,
+                preload_nchunks=preload_nchunks,
+                batch_size=1 if use_torch_loader else batch_size,
             )
             collate_fn = None
-        else:
-            err_msg = (
-                f"Invalid store_type {cfg.store_type}. Must be 'SPARSE' or 'DENSE'."
-            )
-            raise ValueError(err_msg)
-        ds.add_datasets(
-            [
-                ad.io.sparse_dataset(zarr.open(p)["X"])
-                for p in Path(store_path).glob("*.zarr")
-            ]
-        )
 
-    n_samples = cfg.n_samples if cfg.n_samples != -1 else len(ds)
-    if cfg.use_torch_loader:
+    store_hash = get_store_hash(
+        gene_space=gene_space,
+        zarr_chunk_size=zarr_chunk_size,
+        zarr_shard_size=zarr_shard_size,
+        anndata_shard_size=anndata_shard_size,
+        should_densify=should_densify,
+    )
+    store_path = store_path / store_hash
+    if not store_path.exists():
+        err_msg = (
+            f"Store for supplied settings does not exist. "
+            f"Please create the store with following parameters: "
+            f"gene_space={gene_space}, "
+            f"zarr_chunk_size={zarr_chunk_size}, "
+            f"zarr_shard_size={zarr_shard_size}, "
+            f"anndata_shard_size={anndata_shard_size}, "
+            f"should_densify={should_densify}."
+        )
+        raise FileNotFoundError(err_msg)
+    ds.add_datasets(
+        [ad.io.sparse_dataset(zarr.open(p)["X"]) for p in store_path.glob("*.zarr")]
+    )
+
+    n_samples = n_samples if n_samples != -1 else len(ds)
+    if use_torch_loader:
         loader = DataLoader(
             ds,
-            batch_size=cfg.batch_size,
-            num_workers=cfg.num_workers,
+            batch_size=batch_size,
+            num_workers=num_workers,
             drop_last=True,
             collate_fn=collate_fn,
         )
-        samples_per_sec, _, _ = benchmark(loader, n_samples, cfg.batch_size)
+        samples_per_sec, _, _ = benchmark(loader, n_samples, batch_size)
     else:
-        samples_per_sec, _, _ = benchmark(ds, n_samples, 1)
+        samples_per_sec, _, _ = benchmark(ds, n_samples, batch_size)
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
         """
-        INSERT INTO benchmarks (
+        INSERT INTO results (
             store_path,
             store_type,
             n_samples,
@@ -128,15 +167,19 @@ def benchmark_store(cfg: BenchmarkConfig):
         """,
         (
             str(store_path),
-            cfg.store_type,
+            "DENSE" if should_densify else "SPARSE",
             n_samples,
-            cfg.batch_size,
-            cfg.use_torch_loader,
-            cfg.chunk_size,
-            cfg.preload_nchunks,
-            cfg.num_workers,
+            batch_size,
+            use_torch_loader,
+            chunk_size,
+            preload_nchunks,
+            num_workers,
             samples_per_sec,
         ),
     )
     conn.commit()
     conn.close()
+
+
+if __name__ == "__main__":
+    benchmark_store()
