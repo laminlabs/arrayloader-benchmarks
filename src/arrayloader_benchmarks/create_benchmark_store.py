@@ -12,6 +12,7 @@ from arrayloaders.io import create_store_from_h5ads
 from zarr.codecs import BloscCodec, BloscShuffle
 
 from arrayloader_benchmarks.create_sqlite_databases import DB_PATH
+from arrayloader_benchmarks.utils import hash_store_params
 
 zarr.config.set(
     {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": None}
@@ -49,17 +50,12 @@ def create_store(  # noqa: PLR0917
         raise ValueError(err_msg)
     h5ad_cache_paths = h5ads.cache()[0].parent
 
-    store_type = "DENSE" if should_densify else "SPARSE"
-    store_hash = str(
-        hash(
-            (
-                store_type,
-                gene_space,
-                zarr_chunk_size,
-                zarr_shard_size,
-                anndata_shard_size,
-            )
-        )
+    store_hash = hash_store_params(
+        gene_space=gene_space,
+        zarr_chunk_size=zarr_chunk_size,
+        zarr_shard_size=zarr_shard_size,
+        anndata_shard_size=anndata_shard_size,
+        should_densify=should_densify,
     )
 
     start_time = time.time()
@@ -92,7 +88,7 @@ def create_store(  # noqa: PLR0917
         """,
         (
             str(store_path / store_hash),
-            store_type,
+            "DENSE" if should_densify else "SPARSE",
             gene_space,
             zarr_chunk_size,
             zarr_shard_size,

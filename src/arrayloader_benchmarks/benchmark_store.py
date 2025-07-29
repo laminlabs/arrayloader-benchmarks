@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from arrayloader_benchmarks.create_sqlite_databases import DB_PATH
+from arrayloader_benchmarks.utils import hash_store_params
 
 zarr.config.set(
     {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": None}
@@ -41,27 +42,6 @@ def benchmark(loader, n_samples, batch_size):
     print(f"samples per sec: {samples_per_sec:.2f} samples/sec")
 
     return samples_per_sec, time_per_sample, batch_times
-
-
-def get_store_hash(
-    gene_space: str = "PROTEIN_CODING",
-    zarr_chunk_size: int = 2048,
-    zarr_shard_size: int = 65536,
-    anndata_shard_size: int = 2**21,
-    should_densify: bool = True,  # noqa: FBT001, FBT002
-):
-    store_type = "DENSE" if should_densify else "SPARSE"
-    return str(
-        hash(
-            (
-                store_type,
-                gene_space,
-                zarr_chunk_size,
-                zarr_shard_size,
-                anndata_shard_size,
-            )
-        )
-    )
 
 
 @click.command()
@@ -112,7 +92,7 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
             )
             collate_fn = None
 
-    store_hash = get_store_hash(
+    store_hash = hash_store_params(
         gene_space=gene_space,
         zarr_chunk_size=zarr_chunk_size,
         zarr_shard_size=zarr_shard_size,
