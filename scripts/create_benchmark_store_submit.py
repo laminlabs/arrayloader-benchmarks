@@ -34,7 +34,7 @@ SCRIPT_ARGS+="--should_densify={should_densify} "
 srun --cpu-bind=verbose,socket --accel-bind=g --gres=gpu:1 \
      --container-mounts=$CONTAINER_MOUNTS --container-image=$CONTAINER_IMAGE \
      --no-container-remap-root \
-     bash -c "python -u ${{SCRIPT}} ${{SCRIPT_ARGS}}"
+     bash -c "pip install -e /dss/dsshome1/04/di93zer/git/arrayloaders && python -u ${{SCRIPT}} ${{SCRIPT_ARGS}}"
 """
 
 
@@ -69,7 +69,7 @@ def schedule_jobs(save_path, config_dict):
 
 
 if __name__ == "__main__":
-    STORE_PATH = Path("/dss/mcmlscratch/04/di93zer")
+    STORE_PATH = Path("/dss/mcmlscratch/04/di93zer/arrayloader_benchmarks")
     BENCHMARK_CONFIG_DENSE = {
         "should_densify": [True],
         "n_shards_input": [10],
@@ -80,13 +80,13 @@ if __name__ == "__main__":
     }
     BENCHMARK_CONFIG_SPARSE = {
         "should_densify": [False],
-        "n_shards_input": [10],
+        "n_shards_input": [48],
         "gene_space": ["PROTEIN_CODING"],
-        "zarr_chunk_size": [1024, 2048, 32768, 1_048_576],
+        "zarr_chunk_size": [32768],
         "zarr_shard_size": [134_217_728],
-        "anndata_shard_size": [2_097_152, 10_485_760],
+        "anndata_shard_size": [2_097_152],
     }
     print("Creating SPARSE benchmark stores...")
     schedule_jobs(STORE_PATH, BENCHMARK_CONFIG_SPARSE)
-    print("Creating DENSE benchmark stores...")
-    schedule_jobs(STORE_PATH, BENCHMARK_CONFIG_DENSE)
+    # print("Creating DENSE benchmark stores...")
+    # schedule_jobs(STORE_PATH, BENCHMARK_CONFIG_DENSE)

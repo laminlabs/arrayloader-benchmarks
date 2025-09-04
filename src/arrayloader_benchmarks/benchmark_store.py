@@ -18,7 +18,7 @@ from arrayloader_benchmarks.create_sqlite_databases import DB_PATH
 from arrayloader_benchmarks.utils import hash_store_params
 
 zarr.config.set(
-    {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": None}
+    {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": 4}
 )
 
 
@@ -55,8 +55,10 @@ def benchmark(loader, n_samples, batch_size):
 @click.option("--preload_nchunks", type=int, default=16)
 @click.option("--use_torch_loader", type=bool, default=True)
 @click.option("--num_workers", type=int, default=4)
+@click.option("--use_gpu", type=bool, default=False)
 @click.option("--batch_size", type=int, default=2048)
 @click.option("--n_samples", type=int, default=-1)
+@click.option("--n_shards_input", type=int, default=48)
 def benchmark_store(  # noqa: PLR0913, PLR0917
     store_path: str,
     gene_space: str = "PROTEIN_CODING",
@@ -68,9 +70,27 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
     preload_nchunks: int = 16,
     use_torch_loader: bool = True,  # noqa: FBT001, FBT002
     num_workers: int = 4,
+    use_gpu: bool = False,  # noqa: FBT001, FBT002
     batch_size: int = 2048,
     n_samples: int = -1,
+    n_shards_input: int = 48,
 ):
+    print(
+        f"Benchmarking store at {store_path} with parameters:\n"
+        f"gene_space={gene_space}, "
+        f"zarr_chunk_size={zarr_chunk_size}, "
+        f"zarr_shard_size={zarr_shard_size}, "
+        f"anndata_shard_size={anndata_shard_size}, "
+        f"should_densify={should_densify}, "
+        f"chunk_size={chunk_size}, "
+        f"preload_nchunks={preload_nchunks}, "
+        f"use_torch_loader={use_torch_loader}, "
+        f"num_workers={num_workers}, "
+        f"use_gpu={use_gpu}, "
+        f"batch_size={batch_size}, "
+        f"n_samples={n_samples if n_samples != -1 else 'ALL'}, "
+        f"n_shards_input={n_shards_input}, "
+    )
     store_path = Path(store_path)
 
     with warnings.catch_warnings():
@@ -81,8 +101,14 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
                 chunk_size=chunk_size,
                 preload_nchunks=preload_nchunks,
                 batch_size=1 if use_torch_loader else batch_size,
+                preload_to_gpu=use_gpu,
             )
-            collate_fn = lambda x: sp.vstack([v[0] for v in x])
+            if not use_gpu:
+                collate_fn = lambda x: sp.vstack([v[0] for v in x])
+            else:
+                import cupy.sparse as cp
+
+                collate_fn = lambda x: cp.vstack([v[0] for v in x])
         else:
             ds = ZarrDenseDataset(
                 shuffle=True,
@@ -98,6 +124,7 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
         zarr_shard_size=zarr_shard_size,
         anndata_shard_size=anndata_shard_size,
         should_densify=should_densify,
+        n_shards_input=n_shards_input,
     )
     store_path = store_path / store_hash
     if not store_path.exists():
@@ -108,12 +135,15 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
             f"zarr_chunk_size={zarr_chunk_size}, "
             f"zarr_shard_size={zarr_shard_size}, "
             f"anndata_shard_size={anndata_shard_size}, "
-            f"should_densify={should_densify}."
+            f"should_densify={should_densify}, "
+            f"n_shards_input={n_shards_input}, "
         )
         raise FileNotFoundError(err_msg)
-    ds.add_datasets(
-        [ad.io.sparse_dataset(zarr.open(p)["X"]) for p in store_path.glob("*.zarr")]
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ds.add_datasets(
+            [ad.io.sparse_dataset(zarr.open(p)["X"]) for p in store_path.glob("*.zarr")]
+        )
 
     n_samples = n_samples if n_samples != -1 else len(ds)
     if use_torch_loader:
@@ -141,9 +171,11 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
             chunk_size,
             preload_nchunks,
             num_workers,
+            store_size,
+            use_gpu,
             samples_per_sec
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             str(store_path),
@@ -154,6 +186,8 @@ def benchmark_store(  # noqa: PLR0913, PLR0917
             chunk_size,
             preload_nchunks,
             num_workers,
+            len(ds),
+            use_gpu,
             samples_per_sec,
         ),
     )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("/dss/mcmlscratch/04/di93zer/benchmarks.sqlite")
+DB_PATH = Path("/dss/mcmlscratch/04/di93zer/arrayloader_benchmarks/benchmarks.sqlite")
 
 
 def create_store_table(db_path: Path):
@@ -21,6 +21,7 @@ def create_store_table(db_path: Path):
             zarr_chunk_size INTEGER NOT NULL,
             zarr_shard_size INTEGER NOT NULL,
             anndata_shard_size INTEGER NOT NULL,
+            n_shards_input INTEGER NOT NULL,
             creation_time REAL NOT NULL
         )
         """
@@ -45,6 +46,8 @@ def create_results_table(db_path: Path):
             chunk_size INTEGER NOT NULL,
             preload_nchunks INTEGER NOT NULL,
             num_workers INTEGER NOT NULL,
+            store_size INTEGER NOT NULL,
+            use_gpu BOOLEAN NOT NULL,
             samples_per_sec REAL NOT NULL
         )
         """

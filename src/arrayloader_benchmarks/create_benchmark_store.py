@@ -56,6 +56,7 @@ def create_store(  # noqa: PLR0917
         zarr_shard_size=zarr_shard_size,
         anndata_shard_size=anndata_shard_size,
         should_densify=should_densify,
+        n_shards_input=n_shards_input,
     )
 
     start_time = time.time()
@@ -82,9 +83,10 @@ def create_store(  # noqa: PLR0917
             zarr_chunk_size,
             zarr_shard_size,
             anndata_shard_size,
+            n_shards_input,
             creation_time
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             str(store_path / store_hash),
@@ -93,6 +95,7 @@ def create_store(  # noqa: PLR0917
             zarr_chunk_size,
             zarr_shard_size,
             anndata_shard_size,
+            n_shards_input,
             creation_time,
         ),
     )
