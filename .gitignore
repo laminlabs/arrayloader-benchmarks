@@ -166,5 +166,5 @@ cython_debug/
 *.zrad
 *.soma
 *.h5
-*.parquet
+#*.parquet
 *.zarr
