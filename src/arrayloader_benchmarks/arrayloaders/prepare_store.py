@@ -31,6 +31,7 @@ ZARR_CHUNK_SIZE: int = 32768
 ZARR_SHARD_SIZE: int = 134_217_728
 ANNDATA_SHARD_SIZE: int = 2_097_152
 COMPRESSOR = BloscCodec(cname="lz4", clevel=3, shuffle=BloscShuffle.shuffle)
+UPLOAD_TO_LAMINDB = True
 
 
 if __name__ == "__main__":
@@ -55,20 +56,21 @@ if __name__ == "__main__":
         should_denseify=SHOULD_DENSIFY,
     )
 
-    artifacts = [
-        ln.Artifact.from_anndata(shard, key=shard.name).save()
-        for shard in STORE_PATH.iterdir()
-        if shard.name.endswith(".zarr")
-    ]
-    ln.Collection(
-        artifacts,
-        key="Tahoe100M",
-        description="Tahoe100M for arrayloader-benchmarks",
-    )
-    ln.Collection(
-        [artifacts[0]],
-        key="Tahoe100M_mini",
-        description="Tahoe100M for arrayloader-benchmarks subset to 2mio cells",
-    )
+    if UPLOAD_TO_LAMINDB:
+        artifacts = [
+            ln.Artifact.from_anndata(shard, key=shard.name).save()
+            for shard in STORE_PATH.iterdir()
+            if shard.name.endswith(".zarr")
+        ]
+        ln.Collection(
+            artifacts,
+            key="Tahoe100M",
+            description="Tahoe100M for arrayloader-benchmarks",
+        )
+        ln.Collection(
+            [artifacts[0]],
+            key="Tahoe100M_mini",
+            description="Tahoe100M for arrayloader-benchmarks subset to 2mio cells",
+        )
 
 ln.finish()
