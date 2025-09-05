@@ -5,7 +5,7 @@ from pathlib import Path
 import anndata as ad
 import lamindb as ln
 import pandas as pd
-from arrayloaders.io import shuffle_and_shard_h5ads
+from arrayloaders.io import create_store_from_h5ads
 
 ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
 ln.track(project="zjQ6EYzMXif4")
@@ -39,11 +39,13 @@ if __name__ == "__main__":
     print("Creating h5ads with full gene space...")
     try:
         OUT_PATH.mkdir(parents=True)
-        shuffle_and_shard_h5ads(
+        create_store_from_h5ads(
             file_paths,
             OUT_PATH,
-            chunk_size_reading=2048,
-            shuffle_buffer_size=2**21,
+            chunk_size=2048,
+            buffer_size=2**21,
+            output_format="h5ad",
+            should_denseify=False,
         )
     except FileExistsError:
         print("Preprocessed h5ads already exist, skipping creation...")
