@@ -20,7 +20,8 @@ zarr.config.set(
 ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
 ln.track(project="zjQ6EYzMXif4")
 
-STORE_PATH: Path = Path("/dss/mcmlscratch/04/di93zer/tahoe100_dense")
+# Set path where to save the output store below
+STORE_PATH: Path = Path("/dss/mcmlscratch/04/di93zer/tahoe100_FULL")
 
 GENE_SPACE: Literal["FULL", "PROTEIN_CODING"] = "FULL"
 N_SHARDS_INPUT: int = 48
@@ -63,6 +64,11 @@ if __name__ == "__main__":
         artifacts,
         key="Tahoe100M",
         description="Tahoe100M for arrayloader-benchmarks",
+    )
+    ln.Collection(
+        [artifacts[0]],
+        key="Tahoe100M_mini",
+        description="Tahoe100M for arrayloader-benchmarks subset to 2mio cells",
     )
 
 ln.finish()
