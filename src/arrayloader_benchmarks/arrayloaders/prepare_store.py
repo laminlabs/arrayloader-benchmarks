@@ -45,16 +45,19 @@ if __name__ == "__main__":
         )
         raise ValueError(err_msg)
 
-    create_store_from_h5ads(
-        [h5ads_paths / f"shard_{i}.h5ad" for i in range(N_SHARDS_INPUT)],
-        STORE_PATH,
-        chunk_size=ZARR_CHUNK_SIZE,
-        shard_size=ZARR_SHARD_SIZE,
-        buffer_size=ANNDATA_SHARD_SIZE,
-        zarr_compressor=(COMPRESSOR,),
-        shuffle=False,
-        should_denseify=SHOULD_DENSIFY,
-    )
+    if not STORE_PATH.exists():
+        create_store_from_h5ads(
+            [h5ads_paths / f"shard_{i}.h5ad" for i in range(N_SHARDS_INPUT)],
+            STORE_PATH,
+            chunk_size=ZARR_CHUNK_SIZE,
+            shard_size=ZARR_SHARD_SIZE,
+            buffer_size=ANNDATA_SHARD_SIZE,
+            zarr_compressor=(COMPRESSOR,),
+            shuffle=False,
+            should_denseify=SHOULD_DENSIFY,
+        )
+    else:
+        print(f"Store already exists at {STORE_PATH}, skipping creation...")
 
     if UPLOAD_TO_LAMINDB:
         artifacts = [
