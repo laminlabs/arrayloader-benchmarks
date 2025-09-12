@@ -67,12 +67,12 @@ if __name__ == "__main__":
         ]
         ln.Collection(
             artifacts,
-            key="Tahoe100M",
+            key="Tahoe100M_zarr",
             description="Tahoe100M for arrayloader-benchmarks",
         )
         ln.Collection(
             [artifacts[0]],
-            key="Tahoe100M_mini",
+            key="Tahoe100M_zarr_mini",
             description="Tahoe100M for arrayloader-benchmarks subset to 2mio cells",
         )
 
