@@ -12,6 +12,16 @@ from zarr.codecs import BloscCodec, BloscShuffle
 if TYPE_CHECKING:
     from typing import Literal
 
+import warnings
+
+# Suppress zarr vlen-utf8 codec warnings
+warnings.filterwarnings(
+    "ignore",
+    message="The codec `vlen-utf8` is currently not part in the Zarr format 3 specification.*",
+    category=UserWarning,
+    module="zarr.codecs.vlen_utf8",
+)
+
 
 zarr.config.set(
     {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": None}
@@ -69,11 +79,11 @@ if __name__ == "__main__":
             artifacts,
             key="Tahoe100M_zarr",
             description="Tahoe100M for arrayloader-benchmarks",
-        )
+        ).save()
         ln.Collection(
             [artifacts[0]],
             key="Tahoe100M_zarr_mini",
             description="Tahoe100M for arrayloader-benchmarks subset to 2mio cells",
-        )
+        ).save()
 
 ln.finish()
