@@ -53,7 +53,10 @@ def benchmark(  # noqa: PLR0917
     n_samples: int = 2_000_000,
 ):
     # Download store from laminHub
-    store_shards = ln.Collection.get("LaJOdLd0xZ3v5ZBw0000").cache()
+    collection = ln.Collection.get("LaJOdLd0xZ3v5ZBw0000")
+    store_shards = [
+        artifact.cache(batch_size=48) for artifact in collection.ordered_artifacts.all()
+    ]
 
     ds = ZarrSparseDataset(
         shuffle=True,
