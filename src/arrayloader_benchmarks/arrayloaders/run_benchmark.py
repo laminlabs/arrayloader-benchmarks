@@ -35,18 +35,17 @@ def collate_fn(elems):
 
 
 @click.command()
-@click.option("--store_path", type=str)
-@click.option("--chunk_size", type=int, default=512)
-@click.option("--preload_nchunks", type=int, default=16)
+@click.option("--chunk_size", type=int, default=256)
+@click.option("--preload_nchunks", type=int, default=8)
 @click.option("--use_torch_loader", type=bool, default=True)
-@click.option("--num_workers", type=int, default=4)
+@click.option("--num_workers", type=int, default=6)
 @click.option("--batch_size", type=int, default=4096)
-@click.option("--n_samples", type=int, default=-1)
+@click.option("--n_samples", type=int, default=2_000_000)
 def benchmark(  # noqa: PLR0917
     chunk_size: int = 256,
     preload_nchunks: int = 8,
     use_torch_loader: bool = True,  # noqa: FBT001, FBT002
-    num_workers: int = 8,
+    num_workers: int = 6,
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
 ):
