@@ -8,7 +8,7 @@ import click
 import scipy.sparse as sp
 import zarr
 import zarrs  # noqa
-from arrayloaders.io import ZarrSparseDataset
+from arrayloaders import ZarrSparseDataset
 from torch.utils.data import DataLoader
 
 from arrayloader_benchmarks.utils import benchmark_loader

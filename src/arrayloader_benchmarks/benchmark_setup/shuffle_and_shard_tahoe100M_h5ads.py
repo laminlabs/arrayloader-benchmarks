@@ -5,7 +5,7 @@ from pathlib import Path
 import anndata as ad
 import lamindb as ln
 import pandas as pd
-from arrayloaders.io import create_store_from_h5ads
+from arrayloaders import create_store_from_h5ads
 
 ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
 ln.track(project="zjQ6EYzMXif4")

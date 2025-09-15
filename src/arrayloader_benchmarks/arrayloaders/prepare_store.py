@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import lamindb as ln
 import zarr
 import zarrs  # noqa
-from arrayloaders.io import create_store_from_h5ads
+from arrayloaders import create_store_from_h5ads
 from zarr.codecs import BloscCodec, BloscShuffle
 
 if TYPE_CHECKING:
