@@ -31,9 +31,19 @@ def benchmark(
         [ad.experimental.read_lazy(shard) for shard in store_shards], axis=0
     )
 
+    def fetch_adata(collection, indices):
+        return (
+            collection[indices].X.toarray(),
+            collection[indices].obs["cell_line"].to_numpy(),
+        )
+
     strategy = BlockShuffling(block_size=block_size)
     dataset = scDataset(
-        adata, strategy, batch_size=batch_size, fetch_factor=fetch_factor
+        adata,
+        strategy,
+        batch_size=batch_size,
+        fetch_factor=fetch_factor,
+        fetch_transform=fetch_adata,
     )
 
     loader = DataLoader(
