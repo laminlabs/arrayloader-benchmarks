@@ -27,6 +27,9 @@ warnings.filterwarnings(
     module="zarr.codecs.vlen_utf8",
 )
 
+ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
+ln.track(project="zjQ6EYzMXif4")
+
 
 def collate_fn(elems):
     batch_x = sp.vstack([v[0] for v in elems])
@@ -82,3 +85,5 @@ def benchmark(  # noqa: PLR0917
 
 if __name__ == "__main__":
     benchmark()
+
+ln.finish()
