@@ -33,7 +33,7 @@ def benchmark(
 
     def fetch_adata(collection, indices):
         return (
-            collection[indices].X.toarray(),
+            collection[indices].X.compute(),
             collection[indices].obs["cell_line"].to_numpy(),
         )
 
