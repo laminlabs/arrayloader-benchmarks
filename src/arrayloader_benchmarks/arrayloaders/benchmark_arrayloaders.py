@@ -44,13 +44,15 @@ def collate_fn(elems):
 @click.option("--num_workers", type=int, default=6)
 @click.option("--batch_size", type=int, default=4096)
 @click.option("--n_samples", type=int, default=2_000_000)
+@click.option("--include_obs", type=bool, default=True)
 def benchmark(  # noqa: PLR0917
     chunk_size: int = 256,
-    preload_nchunks: int = 8,
-    use_torch_loader: bool = True,  # noqa: FBT001, FBT002
+    preload_nchunks: int = 64,
+    use_torch_loader: bool = False,  # noqa: FBT001, FBT002
     num_workers: int = 6,
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
+    include_obs: bool = True,  # noqa: FBT001, FBT002
 ):
     # Download store from laminHub
     collection = ln.Collection.get("LaJOdLd0xZ3v5ZBw0000")
@@ -69,7 +71,9 @@ def benchmark(  # noqa: PLR0917
         obs=[
             ad.io.read_elem(zarr.open(p)["obs"])["cell_line"].to_numpy()
             for p in store_shards
-        ],
+        ]
+        if include_obs
+        else None,
     )
 
     n_samples = n_samples if n_samples != -1 else len(ds)
