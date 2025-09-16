@@ -43,7 +43,7 @@ def benchmark(
         strategy,
         batch_size=batch_size,
         fetch_factor=fetch_factor,
-        fetch_transform=fetch_adata,
+        fetch_callback=fetch_adata,
     )
 
     loader = DataLoader(
