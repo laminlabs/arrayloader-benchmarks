@@ -27,14 +27,16 @@ def benchmark(
 ):
     # Download h5ad shards from laminHub
     h5ad_shards = ln.Collection.get("eAgoduHMxuDs5Wem0000").cache()
-    adata = ad.concat([ad.read_h5ad(shard, backed="r") for shard in h5ad_shards])
+    adata_collection = ad.experimental.AnnCollection(
+        [ad.read_h5ad(shard, backed="r") for shard in h5ad_shards]
+    )
 
     def fetch_adata(collection, indices):
         return collection[indices].X.compute()
 
     strategy = BlockShuffling(block_size=block_size)
     dataset = scDataset(
-        adata,
+        adata_collection,
         strategy,
         batch_size=batch_size,
         fetch_factor=fetch_factor,
