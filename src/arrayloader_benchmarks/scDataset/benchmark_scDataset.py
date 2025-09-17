@@ -3,7 +3,6 @@ from __future__ import annotations
 import anndata as ad
 import click
 import lamindb as ln
-import zarr
 from scdataset import BlockShuffling, scDataset
 from torch.utils.data import DataLoader
 
@@ -27,12 +26,8 @@ def benchmark(
     n_samples: int = 2_000_000,
 ):
     # Download h5ad shards from laminHub
-    store_shards = ln.Collection.get("LaJOdLd0xZ3v5ZBw0000").cache()
-    adatas = []
-    for shard in store_shards:
-        g = zarr.open(shard)
-        adatas.append(ad.AnnData(X=ad.experimental.read_elem_lazy(g["X"])))
-    adata = ad.concat(adatas, axis=0)
+    h5ad_shards = ln.Collection.get("eAgoduHMxuDs5Wem0000").cache()
+    adata = ad.concatenate(ad.read_h5ad(shard, backed="r") for shard in h5ad_shards)
 
     def fetch_adata(collection, indices):
         return collection[indices].X.compute()
