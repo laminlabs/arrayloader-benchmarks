@@ -32,7 +32,7 @@ def benchmark(
     )
 
     def fetch_adata(collection, indices):
-        return collection[indices].X.compute()
+        return collection[indices].X
 
     strategy = BlockShuffling(block_size=block_size)
     dataset = scDataset(
