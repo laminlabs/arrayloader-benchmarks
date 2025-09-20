@@ -17,7 +17,7 @@ OUT_PATH_SUBSET = Path("/mnt/dssfs02/tahoe100M_protein_coding")
 
 if __name__ == "__main__":
     # Download h5ad files from lamin
-    artifact_ids = [
+    artifact_uids = [
         "aJIqo7bNyJAs9z0r0000",
         "ZFeVfd0ugAHeWCxm0000",
         "XVSrkq9pyF1OBLgG0000",
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         "9L9HZ55HqUL0aqaR0000",
         "vn5cUJCHbjpPPsZx0000",
     ]
-    file_paths = [ln.Artifact.get(id_).cache() for id_ in artifact_ids]
+    file_paths = [ln.Artifact.get(uid).cache() for uid in artifact_uids]
 
     # Create shuffled and sharded h5ad files --- FULL GENE SPACE
     print("Creating h5ads with full gene space...")
