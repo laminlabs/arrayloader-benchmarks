@@ -27,9 +27,6 @@ zarr.config.set(
     {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": None}
 )
 
-ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
-ln.track(project="zjQ6EYzMXif4")
-
 # Set path where to save the output store below
 STORE_PATH: Path = Path("/dss/mcmlscratch/04/di93zer/tahoe100_FULL")
 
@@ -45,10 +42,19 @@ UPLOAD_TO_LAMINDB = True
 
 
 if __name__ == "__main__":
+    ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
+    ln.track(project="zjQ6EYzMXif4")
+
+    benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
+
     if GENE_SPACE == "FULL":
-        h5ads_paths = ln.Collection.get("eAgoduHMxuDs5Wem0000").cache()[0].parent
+        h5ads_paths = (
+            benchmarking_collections.get("eAgoduHMxuDs5Wem0000").cache()[0].parent
+        )
     elif GENE_SPACE == "PROTEIN_CODING":
-        h5ads_paths = ln.Collection.get("k9GqakN96EmLjn1L0000").cache()[0].parent
+        h5ads_paths = (
+            benchmarking_collections.get("k9GqakN96EmLjn1L0000").cache()[0].parent
+        )
     else:
         err_msg = (
             f"Invalid gene space: {GENE_SPACE}. Must be 'FULL' or 'PROTEIN_CODING'."
@@ -86,4 +92,4 @@ if __name__ == "__main__":
             description="Tahoe100M for arrayloader-benchmarks subset to 2mio cells",
         ).save()
 
-ln.finish()
+    ln.finish()

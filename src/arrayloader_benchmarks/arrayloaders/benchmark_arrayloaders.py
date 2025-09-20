@@ -27,9 +27,6 @@ warnings.filterwarnings(
     module="zarr.codecs.vlen_utf8",
 )
 
-ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
-ln.track(project="zjQ6EYzMXif4")
-
 
 def collate_fn(elems):
     batch_x = sp.vstack([v[0] for v in elems])
@@ -54,8 +51,8 @@ def benchmark(  # noqa: PLR0917
     n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
 ):
-    # Download store from laminHub
-    collection = ln.Collection.get("LaJOdLd0xZ3v5ZBw0000")
+    benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
+    collection = benchmarking_collections.get("LaJOdLd0xZ3v5ZBw0000")
     store_shards = [
         artifact.cache(batch_size=48) for artifact in collection.ordered_artifacts.all()
     ]
@@ -91,6 +88,7 @@ def benchmark(  # noqa: PLR0917
 
 
 if __name__ == "__main__":
+    ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
+    ln.track(project="zjQ6EYzMXif4")
     benchmark()
-
-ln.finish()
+    ln.finish()
