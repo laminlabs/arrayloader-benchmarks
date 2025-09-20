@@ -7,17 +7,15 @@ import lamindb as ln
 import pandas as pd
 from arrayloaders import create_store_from_h5ads
 
-ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
-ln.track(project="zjQ6EYzMXif4")
-
 # Set paths where to store the output h5ad files below
 OUT_PATH = Path("/mnt/dssfs02/tahoe100M")
 OUT_PATH_SUBSET = Path("/mnt/dssfs02/tahoe100M_protein_coding")
 
 
 if __name__ == "__main__":
-    # Download h5ad files from lamin
-    artifact_ids = [
+    ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
+    ln.track(project="zjQ6EYzMXif4")
+    artifact_uids = [
         "aJIqo7bNyJAs9z0r0000",
         "ZFeVfd0ugAHeWCxm0000",
         "XVSrkq9pyF1OBLgG0000",
@@ -33,7 +31,8 @@ if __name__ == "__main__":
         "9L9HZ55HqUL0aqaR0000",
         "vn5cUJCHbjpPPsZx0000",
     ]
-    file_paths = [ln.Artifact.get(id_).cache() for id_ in artifact_ids]
+    benchmarking_artifacts = ln.Artifact.using("laminlabs/arrayloader-benchmarks")
+    file_paths = [benchmarking_artifacts.get(uid).cache() for uid in artifact_uids]
 
     # Create shuffled and sharded h5ad files --- FULL GENE SPACE
     print("Creating h5ads with full gene space...")
@@ -89,5 +88,4 @@ if __name__ == "__main__":
         description="Shuffled and shared version of the Tahoe100M dataset subset to protein coding genes",
     )
     collection.save()
-
-ln.finish()
+    ln.finish()
