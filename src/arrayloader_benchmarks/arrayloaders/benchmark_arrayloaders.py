@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import warnings
 
 import anndata as ad
@@ -85,6 +86,8 @@ def benchmark(  # noqa: PLR0917
         samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
     else:
         samples_per_sec, _, _ = benchmark_loader(ds, n_samples, batch_size)
+
+    click.echo(json.dumps({"samples/sec": samples_per_sec}))
 
 
 if __name__ == "__main__":
