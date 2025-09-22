@@ -78,7 +78,7 @@ if __name__ == "__main__":
     if UPLOAD_TO_LAMINDB:
         artifacts = [
             ln.Artifact.from_anndata(
-                shard, key=f"tahoe100M_2025-09-20/{shard.name}"
+                shard, key=f"dataloader_v2/tahoe100M_2025-09-20/{shard.name}"
             ).save()
             for shard in STORE_PATH.iterdir()
             if shard.name.endswith(".zarr")

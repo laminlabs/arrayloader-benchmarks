@@ -50,7 +50,9 @@ if __name__ == "__main__":
         print("Preprocessed h5ads already exist, skipping creation...")
 
     artifacts = [
-        ln.Artifact.from_anndata(shard, key=f"tahoe100M_sharded/{shard.name}").save()
+        ln.Artifact.from_anndata(
+            shard, key=f"dataloader_v2/tahoe100M_sharded/{shard.name}"
+        ).save()
         for shard in OUT_PATH.iterdir()
         if shard.name.endswith(".h5ad")
     ]
@@ -79,7 +81,8 @@ if __name__ == "__main__":
 
     artifacts = [
         ln.Artifact.from_anndata(
-            shard, key=f"tahoe_100M_protein_coding_sharded/protein_coding_{shard.name}"
+            shard,
+            key=f"dataloader_v2/tahoe_100M_protein_coding_sharded/protein_coding_{shard.name}",
         ).save()
         for shard in OUT_PATH_SUBSET.iterdir()
         if shard.name.endswith(".h5ad")
