@@ -43,7 +43,8 @@ def collate_fn(elems):
 @click.option("--batch_size", type=int, default=4096)
 @click.option("--n_samples", type=int, default=2_000_000)
 @click.option("--include_obs", type=bool, default=True)
-def benchmark(  # noqa: PLR0917
+@click.option("--n_shards", type=int, default=-1)
+def benchmark(  # noqa: PLR0917, PLR0913
     chunk_size: int = 256,
     preload_nchunks: int = 64,
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
@@ -51,11 +52,15 @@ def benchmark(  # noqa: PLR0917
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
+    n_shards: int = -1,
 ):
     benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
     collection = benchmarking_collections.get("LaJOdLd0xZ3v5ZBw0000")
+    if n_shards < 1:
+        n_shards = len(collection.ordered_artifacts.all())
     store_shards = [
-        artifact.cache(batch_size=48) for artifact in collection.ordered_artifacts.all()
+        artifact.cache(batch_size=48)
+        for artifact in collection.ordered_artifacts.all()[:n_shards]
     ]
 
     ds = ZarrSparseDataset(
