@@ -17,15 +17,23 @@ from arrayloader_benchmarks.utils import benchmark_loader
 @click.option("--num_workers", type=int, default=6)
 @click.option("--batch_size", type=int, default=4096)
 @click.option("--n_samples", type=int, default=2_000_000)
-def benchmark(
+@click.option("--n_shards", type=int, default=-1)
+def benchmark(  # noqa: PLR0917
     block_size: int = 4,
     fetch_factor: int = 16,
     num_workers: int = 6,
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
+    n_shards: int = -1,
 ):
     benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
-    h5ad_shards = benchmarking_collections.get("eAgoduHMxuDs5Wem0000").cache()
+    collection = benchmarking_collections.get("eAgoduHMxuDs5Wem0000")
+    if n_shards < 1:
+        n_shards = len(collection.ordered_artifacts.all())
+    h5ad_shards = [
+        artifact.cache() for artifact in collection.ordered_artifacts.all()[:n_shards]
+    ]
+
     adata_collection = ad.experimental.AnnCollection(
         [ad.read_h5ad(shard, backed="r") for shard in h5ad_shards]
     )
