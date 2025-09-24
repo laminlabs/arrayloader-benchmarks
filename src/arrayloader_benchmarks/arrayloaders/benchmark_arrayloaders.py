@@ -17,7 +17,11 @@ from torch.utils.dlpack import from_dlpack
 from arrayloader_benchmarks.utils import benchmark_loader
 
 zarr.config.set(
-    {"codec_pipeline.path": "zarrs.ZarrsCodecPipeline", "threading.max_workers": None}
+    {
+        "threading.max_workers": 5,
+        "codec_pipeline.path": "zarrs.ZarrsCodecPipeline",
+        "concurrency": 4,
+    }
 )
 
 # Suppress zarr vlen-utf8 codec warnings
