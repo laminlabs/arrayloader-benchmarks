@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import warnings
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import anndata as ad
 import click
@@ -162,14 +162,12 @@ def run_annbatch(
 
 
 @click.command()
-@click.option(
-    "--tool",
-    type=Literal["annbatch", "MappedCollection", "scDataset"],
-    default="annbatch",
+@click.argument(
+    "tool", type=click.Choice(["annbatch", "MappedCollection", "scDataset"])
 )
 @click.option(
     "--collection",
-    type=Literal["Tahoe100M_tiny", "Tahoe100M"],
+    type=click.Choice(["Tahoe100M_tiny", "Tahoe100M"]),
     default="Tahoe100M_tiny",
 )
 @click.option("--chunk_size", type=int, default=256)
@@ -183,8 +181,8 @@ def run_annbatch(
 @click.option("--include_obs", type=bool, default=True)
 @click.option("--n_shards", type=int, default=1)
 def run(
-    tool: Literal["annbatch", "MappedCollection", "scDataset"] = "annbatch",
-    collection: Literal["Tahoe100M_tiny", "Tahoe100M"] = "Tahoe100M_tiny",
+    tool: str,  # No default value since it's required
+    collection: str = "Tahoe100M_tiny",
     chunk_size: int = 256,
     preload_nchunks: int = 64,
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
