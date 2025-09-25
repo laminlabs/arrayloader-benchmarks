@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = [ "hatchling"]
+requires = ["hatchling"]
 
 [project]
 name = "arrayloader_benchmarks"
@@ -9,29 +9,29 @@ description = "Benchmarking different minibatch loaders for AnnData."
 requires-python = ">=3.11"
 license = "BSD-3-Clause"
 authors = [
-    { name = "Alex Wolf" },
-    { name = "Ilan Gold" },
-    { name = "Felix Fishcer" },
+  { name = "Alex Wolf" },
+  { name = "Ilan Gold" },
+  { name = "Felix Fishcer" },
 ]
 maintainers = [
-    { name = "Felix Fischer", email = "felix.fischer@helmholtz-munich.de" },
-    { name = "Ilan Gold", email = "ilan.gold@helmholtz-munich.de" },
+  { name = "Felix Fischer", email = "felix.fischer@helmholtz-munich.de" },
+  { name = "Ilan Gold", email = "ilan.gold@helmholtz-munich.de" },
 ]
 readme = "README.md"
 classifiers = [
-    "Environment :: Console",
-    "Framework :: Jupyter",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "Natural Language :: English",
-    "Operating System :: MacOS :: MacOS X",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Environment :: Console",
+  "Framework :: Jupyter",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: English",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
 [tool.hatch.metadata]
@@ -39,68 +39,69 @@ allow-direct-references = true
 
 [project.optional-dependencies]
 arrayloaders = [
-    # Likely an editable install in real usage
-    "arrayloaders@git+https://github.com/laminlabs/arrayloaders"
+  # Likely an editable install in real usage
+  "arrayloaders@git+https://github.com/laminlabs/arrayloaders",
 ]
-test = [ "pytest", "pytest-xdist" ]
+test = ["pytest", "pytest-xdist"]
 
 [tool.hatch.build.targets.wheel]
-packages = [ "src/arrayloader_benchmarks" ]
+packages = ["src/arrayloader_benchmarks"]
 
 [tool.ruff]
-src = [ "src" ]
+src = ["src"]
 
 [tool.ruff.format]
 docstring-code-format = true
 
 [tool.ruff.lint]
 select = [
-    "B",    # Likely bugs and design issues
-    "BLE",  # Blind except
-    "C4",   # Comprehensions
-    "E",    # Error detected by Pycodestyle
-    "EM",   # Traceback-friendly error messages
-    "F",    # Errors detected by Pyflakes
-    "FBT",  # Boolean positional arguments
-    "I",    # isort
-    "ICN",  # Follow import conventions
-    "ISC",  # Implicit string concatenation
-    "PERF", # Performance
-    "PIE",  # Syntax simplifications
-    "PTH",  # Pathlib instead of os.path
-    "PT",   # Pytest conventions
-    "PL",   # Pylint
-    "PYI",  # Typing
-    "RUF",  # Unused noqa
-    "SIM",  # Code simplifications
-    "TC",   # manage type checking blocks
-    "TID",  # Banned imports
-    "UP",   # pyupgrade
-    "W",    # Warning detected by Pycodestyle
+  "B",    # Likely bugs and design issues
+  "BLE",  # Blind except
+  "C4",   # Comprehensions
+  "E",    # Error detected by Pycodestyle
+  "EM",   # Traceback-friendly error messages
+  "F",    # Errors detected by Pyflakes
+  "FBT",  # Boolean positional arguments
+  "I",    # isort
+  "ICN",  # Follow import conventions
+  "ISC",  # Implicit string concatenation
+  "PERF", # Performance
+  "PIE",  # Syntax simplifications
+  "PTH",  # Pathlib instead of os.path
+  "PT",   # Pytest conventions
+  "PL",   # Pylint
+  "PYI",  # Typing
+  "RUF",  # Unused noqa
+  "SIM",  # Code simplifications
+  "TC",   # manage type checking blocks
+  "TID",  # Banned imports
+  "UP",   # pyupgrade
+  "W",    # Warning detected by Pycodestyle
 ]
-external = [ "PLR0917" ] # preview rule
 ignore = [
-    "C408",    # dict() syntax is preferable for dicts used as kwargs
-    "E501",    # line too long -> we accept long comment lines; formatter gets rid of long code lines
-    "E731",    # Do not assign a lambda expression, use a def -> AnnData allows lambda expression assignments,
-    "E741",    # allow I, O, l as variable names -> I is the identity matrix, i, j, k, l is reasonable indexing notation
-    "TID252",  # We use relative imports from parent modules
-    "PLC0415", # We use a lot of non-top-level imports
-    "PLR2004", # “2” is often not too “magic” a number
-    "PLW2901", # Shadowing loop variables isn’t a big deal
+  "C408",    # dict() syntax is preferable for dicts used as kwargs
+  "E501",    # line too long -> we accept long comment lines; formatter gets rid of long code lines
+  "E731",    # Do not assign a lambda expression, use a def -> AnnData allows lambda expression assignments,
+  "E741",    # allow I, O, l as variable names -> I is the identity matrix, i, j, k, l is reasonable indexing notation
+  "TID252",  # We use relative imports from parent modules
+  "PLC0415", # We use a lot of non-top-level imports
+  "PLR2004", # “2” is often not too “magic” a number
+  "PLW2901", # Shadowing loop variables isn’t a big deal
+  "PLR0913", # too many arguments
+  "PLR0917", # too many positional arguments
 ]
-allowed-confusables = [ "×", "’", "–", "α" ]
+allowed-confusables = ["×", "’", "–", "α"]
 [tool.ruff.lint.isort]
-known-first-party = [ "arrayloader_benchmarks" ]
-required-imports = [ "from __future__ import annotations" ]
+known-first-party = ["arrayloader_benchmarks"]
+required-imports = ["from __future__ import annotations"]
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = [ "slice" ]
+extend-immutable-calls = ["slice"]
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "subprocess.call".msg = "Use `subprocess.run([…])` instead"
 "subprocess.check_call".msg = "Use `subprocess.run([…], check=True)` instead"
 "subprocess.check_output".msg = "Use `subprocess.run([…], check=True, capture_output=True)` instead"
 [tool.ruff.lint.flake8-type-checking]
-exempt-modules = [  ]
+exempt-modules = []
 strict = true
 [tool.ruff.lint.pylint]
 max-args = 7
