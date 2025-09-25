@@ -17,14 +17,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def get_preshuffled_tahoe100m_dataset(
-    *, cache: bool = True, format: Literal["h5ad", "zarr"] = "h5ad", n_shards: int = 1
+def get_datasets(
+    *, collection_key: str, cache: bool = True, n_shards: int = 1
 ) -> tuple[list[Path], int]:
     benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
-    if format == "zarr":
-        collection = benchmarking_collections.get("LaJOdLd0xZ3v5ZBw0000")
-    elif format == "h5ad":
-        collection = benchmarking_collections.get("eAgoduHMxuDs5Wem0000")
+    collection = benchmarking_collections.get(key=collection_key)
     if n_shards == -1:
         n_shards = collection.artifacts.count()
     local_shards = [
@@ -170,6 +167,11 @@ def run_annbatch(
     type=Literal["annbatch", "MappedCollection", "scDataset"],
     default="annbatch",
 )
+@click.option(
+    "--collection",
+    type=Literal["Tahoe100M_tiny", "Tahoe100M"],
+    default="Tahoe100M_tiny",
+)
 @click.option("--chunk_size", type=int, default=256)
 @click.option("--preload_nchunks", type=int, default=8)
 @click.option("--use_torch_loader", type=bool, default=True)
@@ -182,6 +184,7 @@ def run_annbatch(
 @click.option("--n_shards", type=int, default=1)
 def run(
     tool: Literal["annbatch", "MappedCollection", "scDataset"] = "annbatch",
+    collection: Literal["Tahoe100M_tiny", "Tahoe100M"] = "Tahoe100M_tiny",
     chunk_size: int = 256,
     preload_nchunks: int = 64,
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
@@ -193,16 +196,15 @@ def run(
     include_obs: bool = True,  # noqa: FBT001, FBT002
     n_shards: int = 1,
 ):
-    # ln.save(ln.Feature.from_dict(locals()))  # only needed a single time to define valid params
-    ln.track(project="zjQ6EYzMXif4", params=locals())  # param tracking optional
+    ln.track(project="zjQ6EYzMXif4")
 
     if tool in {"MappedCollection", "scDataset"}:
-        local_shards, n_samples = get_preshuffled_tahoe100m_dataset(
-            cache=True, format="h5ad", n_shards=n_shards
+        local_shards, n_samples = get_datasets(
+            collection_key=f"{collection}_h5ad", cache=True, n_shards=n_shards
         )
     else:
-        local_shards, n_samples = get_preshuffled_tahoe100m_dataset(
-            cache=True, format="zarr", n_shards=n_shards
+        local_shards, n_samples = get_datasets(
+            collection_key=f"{collection}_zarr", cache=True, n_shards=n_shards
         )
 
     if tool == "annbatch":
