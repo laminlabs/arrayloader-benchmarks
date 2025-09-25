@@ -27,6 +27,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install git+https://github.com/laminlabs/laminci
-      - run: uv pip install --system -e .[dev,arrayloaders]
+      - run: uv pip install --system -e .[dev]
+      # will consolidate installation in next refactor once this is merged: https://github.com/laminlabs/lamindb/pull/2976
+      - run: uv pip install --system git+https://github.com/laminlabs/arrayloaders
       - run: lamin init
       - run: python run_data_loading_benchmark_on_tahoe100m.py annbatch

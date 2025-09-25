@@ -194,7 +194,7 @@ def run(
     include_obs: bool = True,  # noqa: FBT001, FBT002
     n_shards: int = 1,
 ):
-    ln.track(project="zjQ6EYzMXif4")
+    ln.track("LDSa3IJYQkbm", project="zjQ6EYzMXif4")
 
     if tool in {"MappedCollection", "scDataset"}:
         local_shards, n_samples = get_datasets(
