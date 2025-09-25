@@ -33,9 +33,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-
-[tool.hatch.metadata]
-allow-direct-references = true
+dependencies = ["lamindb"]
 
 [project.optional-dependencies]
 arrayloaders = [
@@ -44,6 +42,9 @@ arrayloaders = [
 ]
 scdataset = ["scdataset"]
 test = ["pytest", "pytest-xdist"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/arrayloader_benchmarks"]
