@@ -42,6 +42,7 @@ arrayloaders = [
   # Likely an editable install in real usage
   "arrayloaders@git+https://github.com/laminlabs/arrayloaders",
 ]
+scdataset = ["scdataset"]
 test = ["pytest", "pytest-xdist"]
 
 [tool.hatch.build.targets.wheel]
