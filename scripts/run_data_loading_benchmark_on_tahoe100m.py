@@ -18,21 +18,21 @@ if TYPE_CHECKING:
 
 
 def get_datasets(
-    *, collection_key: str, cache: bool = True, n_shards: int = 1
+    *, collection_key: str, cache: bool = True, n_datasets: int = 1
 ) -> tuple[list[Path], int]:
     benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
     collection = benchmarking_collections.get(key=collection_key)
-    if n_shards == -1:
-        n_shards = collection.artifacts.count()
+    if n_datasets == -1:
+        n_datasets = collection.artifacts.count()
     local_shards = [
         artifact.cache(
             batch_size=48
         )  # batch_size during download shouldn't be necessary to set
-        for artifact in collection.ordered_artifacts.all()[:n_shards]
+        for artifact in collection.ordered_artifacts.all()[:n_datasets]
     ]
     n_samples_collection = [
         artifact.n_observations
-        for artifact in collection.ordered_artifacts.all()[:n_shards]
+        for artifact in collection.ordered_artifacts.all()[:n_datasets]
     ]
     return local_shards, sum(n_samples_collection)
 
@@ -145,8 +145,6 @@ def run_annbatch(
         if include_obs
         else None,
     )
-    print("done adding datasets")
-
     n_samples = n_samples if n_samples != -1 else len(ds)
     if use_torch_loader:
         loader = DataLoader(
@@ -156,7 +154,6 @@ def run_annbatch(
             drop_last=True,
             collate_fn=collate_fn,
         )
-        print("done creating torch dataloader")
         samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
     else:
         samples_per_sec, _, _ = benchmark_loader(ds, n_samples, batch_size)
@@ -182,7 +179,7 @@ def run_annbatch(
 @click.option("--batch_size", type=int, default=4096)
 @click.option("--n_samples", type=int, default=2_000_000)
 @click.option("--include_obs", type=bool, default=True)
-@click.option("--n_shards", type=int, default=1)
+@click.option("--n_datasets", type=int, default=1)
 @click.option("--project", type=str, default="Arrayloader benchmarks v2")
 def run(
     tool: str,  # No default value since it's required
@@ -196,18 +193,18 @@ def run(
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
-    n_shards: int = 1,
+    n_datasets: int = 1,
     project: str = "Arrayloader benchmarks v2",
 ):
     ln.track("LDSa3IJYQkbm", project=project)
 
     if tool in {"MappedCollection", "scDataset"}:
         local_shards, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_h5ad", cache=True, n_shards=n_shards
+            collection_key=f"{collection}_h5ad", cache=True, n_datasets=n_datasets
         )
     else:
         local_shards, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_zarr", cache=True, n_shards=n_shards
+            collection_key=f"{collection}_zarr", cache=True, n_datasets=n_datasets
         )
 
     if 10 * batch_size > n_samples_collection:
@@ -250,7 +247,7 @@ def run(
         "n_samples_collection": n_samples_collection,
         "num_workers": num_workers,
         "batch_size": batch_size,
-        "n_shards": n_shards,
+        "n_datasets": n_datasets,
         "chunk_size": chunk_size,
         "run_uid": ln.context.run.uid,
         "timestamp": datetime.datetime.now(datetime.UTC),
