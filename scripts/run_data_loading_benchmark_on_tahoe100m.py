@@ -105,6 +105,7 @@ def run_annbatch(
     # local imports so that it can be run without installing all dependencies
     import scipy.sparse as sp
     import zarr
+    import zarrs  # noqa
     from arrayloaders import ZarrSparseDataset
     from torch.utils.data import DataLoader
     from torch.utils.dlpack import from_dlpack
