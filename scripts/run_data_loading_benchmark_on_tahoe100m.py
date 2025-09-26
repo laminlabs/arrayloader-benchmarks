@@ -172,7 +172,7 @@ def run_annbatch(
 )
 @click.option("--chunk_size", type=int, default=256)
 @click.option("--preload_nchunks", type=int, default=8)
-@click.option("--use_torch_loader", type=bool, default=True)
+@click.option("--use_torch_loader", type=bool, default=False)
 @click.option("--block_size", type=int, default=4)
 @click.option("--fetch_factor", type=int, default=16)
 @click.option("--num_workers", type=int, default=4)
