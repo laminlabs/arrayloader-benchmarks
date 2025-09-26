@@ -197,6 +197,8 @@ def run(
     n_datasets: int = 1,
     project: str = "Arrayloader benchmarks v2",
 ):
+    # comment this line out if you don't want to enforce running committed code
+    ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
     ln.track("LDSa3IJYQkbm", project=project)
 
     if tool in {"MappedCollection", "scDataset"}:
