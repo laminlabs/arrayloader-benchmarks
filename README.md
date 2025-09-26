@@ -22,7 +22,6 @@ python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --
 python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --n_datasets 5  # run against the the first dataset, 10M cells
 ```
 <br>
-<br>
 
 You can choose between different benchmarking [dataset collections](https://lamin.ai/laminlabs/arrayloader-benchmarks/collections).
 
@@ -30,7 +29,7 @@ You can choose between different benchmarking [dataset collections](https://lami
 <br>
 <br>
 
-When running the script, [parameters and results](https://lamin.ai/laminlabs/arrayloader-benchmarks/artifact/0EiozNVjberZTFHa) are automatically tracked in a parquet file, along with source code and datasets.
+When running the script, [parameters and results](https://lamin.ai/laminlabs/arrayloader-benchmarks/artifact/0EiozNVjberZTFHa) are automatically tracked in a parquet file, along with source code, run environment, and input and output datasets.
 
 <img width="1298" height="904" alt="image" src="https://github.com/user-attachments/assets/60c3262f-1bdc-44a4-a488-4784918a6905" />
 <br>
