@@ -38,3 +38,5 @@ jobs:
           ln.Project(name='Arrayloader benchmarks v2').save()
           "
       - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py MappedCollection
+      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py annbatch
+      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py scDataset
