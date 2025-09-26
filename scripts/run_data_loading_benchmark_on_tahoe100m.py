@@ -145,6 +145,7 @@ def run_annbatch(
         if include_obs
         else None,
     )
+    print("done adding datasets")
 
     n_samples = n_samples if n_samples != -1 else len(ds)
     if use_torch_loader:
@@ -155,6 +156,7 @@ def run_annbatch(
             drop_last=True,
             collate_fn=collate_fn,
         )
+        print("done creating torch dataloader")
         samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
     else:
         samples_per_sec, _, _ = benchmark_loader(ds, n_samples, batch_size)
