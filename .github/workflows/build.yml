@@ -39,4 +39,4 @@ jobs:
           "
       - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py MappedCollection
       - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py scDataset
-      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py annbatch
+      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py annbatch --use_torch_loader False
