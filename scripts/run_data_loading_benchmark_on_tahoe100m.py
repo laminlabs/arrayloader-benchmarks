@@ -30,11 +30,11 @@ def get_datasets(
         )  # batch_size during download shouldn't be necessary to set
         for artifact in collection.ordered_artifacts.all()[:n_shards]
     ]
-    n_samples = [
+    n_samples_collection = [
         artifact.n_observations
         for artifact in collection.ordered_artifacts.all()[:n_shards]
     ]
-    return local_shards, n_samples
+    return local_shards, n_samples_collection
 
 
 def run_scdataset(
@@ -200,11 +200,11 @@ def run(
     ln.track("LDSa3IJYQkbm", project=project)
 
     if tool in {"MappedCollection", "scDataset"}:
-        local_shards, n_samples = get_datasets(
+        local_shards, n_samples_collection = get_datasets(
             collection_key=f"{collection}_h5ad", cache=True, n_shards=n_shards
         )
     else:
-        local_shards, n_samples = get_datasets(
+        local_shards, n_samples_collection = get_datasets(
             collection_key=f"{collection}_zarr", cache=True, n_shards=n_shards
         )
 
@@ -239,7 +239,8 @@ def run(
     new_result = {
         "tool": tool,
         "samples_per_sec": n_samples_per_sec,
-        "n_observations": n_samples,
+        "n_samples_loaded": n_samples,
+        "n_samples_collection": n_samples_collection,
         "chunk_size": chunk_size,
         "run_uid": ln.context.run.uid,
         "timestamp": datetime.datetime.now(datetime.UTC),
