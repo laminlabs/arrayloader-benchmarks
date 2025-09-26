@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
 
-from arrayloader_benchmarks import benchmark_loader
+from arrayloader_benchmarks import benchmark_loader, compute_spec
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -254,6 +254,7 @@ def run(
         "num_workers": num_workers,
         "batch_size": batch_size,
         "chunk_size": chunk_size,
+        "compute_spec": compute_spec.get_aws_sagemaker_instance_type(),
         "run_uid": ln.context.run.uid,
         "timestamp": datetime.datetime.now(datetime.UTC),
         "user": ln.setup.settings.user.handle,
