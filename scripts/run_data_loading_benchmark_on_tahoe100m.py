@@ -210,6 +210,10 @@ def run(
             collection_key=f"{collection}_zarr", cache=True, n_shards=n_shards
         )
 
+    if 10 * batch_size > n_samples_collection:
+        print(f"reducing batch size from {batch_size} to {n_samples_collection // 10}")
+        batch_size = n_samples_collection // 10
+
     if tool == "annbatch":
         n_samples_per_sec = run_annbatch(
             local_shards,
