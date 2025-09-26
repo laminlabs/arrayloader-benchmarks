@@ -211,6 +211,8 @@ def run(
         print(f"reducing batch size from {batch_size} to {n_samples_collection // 10}")
         batch_size = n_samples_collection // 10
 
+    n_samples = min(n_samples, n_samples_collection)
+
     if tool == "annbatch":
         n_samples_per_sec = run_annbatch(
             local_shards,
@@ -242,15 +244,16 @@ def run(
     new_result = {
         "tool": tool,
         "collection": collection,
+        "n_datasets": n_datasets,
         "n_samples_per_sec": n_samples_per_sec,
         "n_samples_loaded": n_samples,
         "n_samples_collection": n_samples_collection,
         "num_workers": num_workers,
         "batch_size": batch_size,
-        "n_datasets": n_datasets,
         "chunk_size": chunk_size,
         "run_uid": ln.context.run.uid,
         "timestamp": datetime.datetime.now(datetime.UTC),
+        "user": ln.setup.settings.user.handle,
     }
 
     results_key = "arrayloader_benchmarks_v2/tahoe100m_benchmark.parquet"
