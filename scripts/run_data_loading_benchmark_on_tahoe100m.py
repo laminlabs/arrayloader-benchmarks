@@ -86,6 +86,7 @@ def run_mappedcollection(
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
+        worker_init_fn=mapped_collection.torch_worker_init_fn,
         drop_last=True,
     )
     samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
