@@ -4,7 +4,6 @@ from pathlib import Path
 
 import anndata as ad
 import lamindb as ln
-import pandas as pd
 from arrayloaders import create_store_from_h5ads
 
 # Set paths where to store the output h5ad files below
@@ -67,7 +66,10 @@ if __name__ == "__main__":
     print("Creating h5ads with subset to protein coding genes...")
     try:
         OUT_PATH_SUBSET.mkdir(parents=True)
-        var_subset = pd.read_parquet("protein_coding_genes.parquet").index.tolist()
+        df_protein_coding_genes = ln.Artifact.get(
+            key="protein_coding_genes.parquet"
+        ).load()
+        var_subset = df_protein_coding_genes.index.tolist()
         for shard in OUT_PATH.iterdir():
             if shard.name.endswith(".h5ad"):
                 shard_number = shard.name.split("_")[-1].removesuffix(".h5ad")
