@@ -39,6 +39,6 @@ jobs:
           import lamindb as ln
           ln.Project(name='Arrayloader benchmarks v2').save()
           "
-      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py MappedCollection
-      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py scDataset
-      - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py annbatch
+      - run: python run_loading_benchmark_on_collection.py MappedCollection
+      - run: python run_loading_benchmark_on_collection.py scDataset
+      - run: python run_loading_benchmark_on_collection.py annbatch
