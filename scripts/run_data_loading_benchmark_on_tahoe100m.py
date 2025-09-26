@@ -176,7 +176,7 @@ def run_annbatch(
 @click.option("--use_torch_loader", type=bool, default=True)
 @click.option("--block_size", type=int, default=4)
 @click.option("--fetch_factor", type=int, default=16)
-@click.option("--num_workers", type=int, default=6)
+@click.option("--num_workers", type=int, default=4)
 @click.option("--batch_size", type=int, default=4096)
 @click.option("--n_samples", type=int, default=2_000_000)
 @click.option("--include_obs", type=bool, default=True)
@@ -190,7 +190,7 @@ def run(
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
     block_size: int = 4,
     fetch_factor: int = 16,
-    num_workers: int = 6,
+    num_workers: int = 4,
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
