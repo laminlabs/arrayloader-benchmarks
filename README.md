@@ -8,12 +8,12 @@ This repository contains benchmarking scripts & utilities for scRNA-seq data loa
 
 Typical calls of the main benchmarking script are:
 
-```
+```bash
 git clone https://github.com/laminlabs/arrayloader-benchmarks
 cd arrayloader-benchmarks
-uv pip install --system -e .[scdataset,annbatch]  # provide tools you'd like to install
+uv pip install --system -e ".[scdataset,annbatch]"  # provide tools you'd like to install
 cd scripts
-python run_loading_benchmark_on_collection.py annbatch   # run with collection Tahoe100M_tiny, n_datasets = 1
+python run_loading_benchmark_on_collection.py annbatch   # run annbatch on collection Tahoe100M_tiny, n_datasets = 1
 python run_loading_benchmark_on_collection.py MappedCollection   # run MappedCollection
 python run_loading_benchmark_on_collection.py scDataset   # run scDataset
 python run_loading_benchmark_on_collection.py annbatch --n_datasets -1  # run against all datasets in the collection
