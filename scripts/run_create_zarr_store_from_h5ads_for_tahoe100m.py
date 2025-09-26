@@ -31,8 +31,8 @@ zarr.config.set(
 STORE_PATH: Path = Path("/dss/mcmlscratch/04/di93zer/tahoe100_FULL")
 
 GENE_SPACE: Literal["FULL", "PROTEIN_CODING"] = "FULL"
-n_datasets_INPUT: int = 48
-assert 0 < n_datasets_INPUT <= 48, "n_datasets_INPUT must be between 1 and 48."
+N_DATASETS_INPUT: int = 48
+assert 0 < N_DATASETS_INPUT <= 48, "N_DATASETS_INPUT must be between 1 and 48."
 SHOULD_DENSIFY: bool = False
 ZARR_CHUNK_SIZE: int = 32768
 ZARR_SHARD_SIZE: int = 134_217_728
@@ -43,7 +43,7 @@ UPLOAD_TO_LAMINDB = True
 
 if __name__ == "__main__":
     ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
-    ln.track(project="zjQ6EYzMXif4")
+    ln.track("zqsf9jOCh6pd", project="zjQ6EYzMXif4")
 
     benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     if not STORE_PATH.exists():
         create_store_from_h5ads(
-            [h5ads_paths / f"shard_{i}.h5ad" for i in range(n_datasets_INPUT)],
+            [h5ads_paths / f"shard_{i}.h5ad" for i in range(N_DATASETS_INPUT)],
             STORE_PATH,
             chunk_size=ZARR_CHUNK_SIZE,
             shard_size=ZARR_SHARD_SIZE,
