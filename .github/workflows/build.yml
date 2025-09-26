@@ -31,4 +31,9 @@ jobs:
       # will consolidate installation in next refactor once this is merged: https://github.com/laminlabs/lamindb/pull/2976
       - run: uv pip install --system git+https://github.com/laminlabs/arrayloaders
       - run: lamin init
+      - run: |
+          python -c "
+          import lamindb as ln
+          ln.Project(name='Arrayloader benchmarks v2')
+          "
       - run: python scripts/run_data_loading_benchmark_on_tahoe100m.py annbatch

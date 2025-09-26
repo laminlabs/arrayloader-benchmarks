@@ -180,6 +180,7 @@ def run_annbatch(
 @click.option("--n_samples", type=int, default=2_000_000)
 @click.option("--include_obs", type=bool, default=True)
 @click.option("--n_shards", type=int, default=1)
+@click.option("--project", type=str, default="Arrayloader benchmarks v2")
 def run(
     tool: str,  # No default value since it's required
     collection: str = "Tahoe100M_tiny",
@@ -193,8 +194,9 @@ def run(
     n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
     n_shards: int = 1,
+    project: str = "Arrayloader benchmarks v2",
 ):
-    ln.track("LDSa3IJYQkbm", project="zjQ6EYzMXif4")
+    ln.track("LDSa3IJYQkbm", project=project)
 
     if tool in {"MappedCollection", "scDataset"}:
         local_shards, n_samples = get_datasets(
