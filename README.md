@@ -11,7 +11,9 @@ Typical calls of the main benchmarking script are:
 ```bash
 git clone https://github.com/laminlabs/arrayloader-benchmarks
 cd arrayloader-benchmarks
-uv pip install --system -e ".[scdataset,annbatch]"  # provide tools you'd like to install
+uv pip install -e ".[scdataset,annbatch]"  # provide tools you'd like to install
+lamin init  # to init a new lamindb instance
+# lamin connect laminlabs/arrayloader-benchmarks  # to contribute results to the hosted lamindb instance
 cd scripts
 python run_loading_benchmark_on_collection.py annbatch   # run annbatch on collection Tahoe100M_tiny, n_datasets = 1
 python run_loading_benchmark_on_collection.py MappedCollection   # run MappedCollection
