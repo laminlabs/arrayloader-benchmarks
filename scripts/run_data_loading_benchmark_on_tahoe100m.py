@@ -80,7 +80,7 @@ def run_mappedcollection(
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
 ) -> float:
-    mapped_collection = ln.core.MappedCollection(local_shards)
+    mapped_collection = ln.core.MappedCollection(local_shards, parallel=True)
     loader = DataLoader(
         mapped_collection,
         batch_size=batch_size,
