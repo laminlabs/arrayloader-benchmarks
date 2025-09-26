@@ -263,7 +263,21 @@ def run(
         results_af = ln.Artifact.get(key=results_key)
         results_df = results_af.load()
     except ln.Artifact.DoesNotExist:
-        results_df = pd.DataFrame(columns=new_result.keys())
+        results_df = pd.DataFrame(columns=new_result.keys(), dtype=object).astype(
+            {
+                "tool": "string",
+                "collection": "string",
+                "n_samples_per_sec": "float64",
+                "n_samples_loaded": "int64",
+                "n_samples_collection": "int64",
+                "num_workers": "int64",
+                "batch_size": "int64",
+                "n_shards": "int64",
+                "chunk_size": "int64",
+                "run_uid": "string",
+                "timestamp": pd.DatetimeTZDtype(tz="UTC"),
+            }
+        )
 
     results_df = pd.concat([results_df, pd.DataFrame([new_result])], ignore_index=True)
 
