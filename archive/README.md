@@ -10,7 +10,7 @@ https://lamin.ai/laminlabs/arrayloader-benchmarks/collections
 
 <img width="500" height="481" alt="image" src="https://github.com/user-attachments/assets/b539b13a-9b50-4f66-9b51-16d32fd8566b" />
 
-Typical calls are:
+Typical calls of the main benchmarking script are:
 
 ```
 python scripts/run_data_loading_benchmark_on_tahoe100m.py annbatch   # run with collection Tahoe100M_tiny, n_datasets = 1
