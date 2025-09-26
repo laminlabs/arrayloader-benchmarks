@@ -1,4 +1,4 @@
-# `arrayloader-benchmarks`: Data loader benchmarks for scRNA-seq counts et al.
+# Data loader benchmarks for scRNA-seq counts et al.
 
 _A collaboration between scverse, Lamin, and anyone interested in contributing!_
 
