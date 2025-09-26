@@ -37,8 +37,8 @@ dependencies = ["lamindb>1.11"]
 
 [project.optional-dependencies]
 arrayloaders = [
-  # Likely an editable install in real usage
   "arrayloaders@git+https://github.com/laminlabs/arrayloaders",
+  "torch",
 ]
 scdataset = ["scdataset"]
 test = ["pytest", "pytest-xdist"]
