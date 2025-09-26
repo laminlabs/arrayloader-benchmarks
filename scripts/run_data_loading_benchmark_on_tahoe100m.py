@@ -34,7 +34,7 @@ def get_datasets(
         artifact.n_observations
         for artifact in collection.ordered_artifacts.all()[:n_shards]
     ]
-    return local_shards, n_samples_collection
+    return local_shards, sum(n_samples_collection)
 
 
 def run_scdataset(
@@ -244,9 +244,13 @@ def run(
 
     new_result = {
         "tool": tool,
-        "samples_per_sec": n_samples_per_sec,
+        "collection": collection,
+        "n_samples_per_sec": n_samples_per_sec,
         "n_samples_loaded": n_samples,
         "n_samples_collection": n_samples_collection,
+        "num_workers": num_workers,
+        "batch_size": batch_size,
+        "n_shards": n_shards,
         "chunk_size": chunk_size,
         "run_uid": ln.context.run.uid,
         "timestamp": datetime.datetime.now(datetime.UTC),
