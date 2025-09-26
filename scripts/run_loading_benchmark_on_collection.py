@@ -276,6 +276,8 @@ def run(
         description="Results of v2 of the arrayloader benchmarks",
     ).save()
 
+    ln.finish()
+
 
 if __name__ == "__main__":
     run()
