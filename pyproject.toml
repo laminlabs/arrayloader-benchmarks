@@ -33,13 +33,10 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-dependencies = ["lamindb>1.11"]
+dependencies = ["lamindb>1.11", "torch"]
 
 [project.optional-dependencies]
-arrayloaders = [
-  "arrayloaders@git+https://github.com/laminlabs/arrayloaders",
-  "torch",
-]
+arrayloaders = ["arrayloaders@git+https://github.com/laminlabs/arrayloaders"]
 scdataset = ["scdataset"]
 test = ["pytest", "pytest-xdist"]
 

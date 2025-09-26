@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install git+https://github.com/laminlabs/laminci
-      - run: uv pip install --system -e .[dev]
+      - run: uv pip install --system -e .[scdataset]
       # will consolidate installation in next refactor once this is merged: https://github.com/laminlabs/lamindb/pull/2976
       - run: uv pip install --system git+https://github.com/laminlabs/arrayloaders
       - run: lamin init
