@@ -4,11 +4,7 @@ _A collaboration between scverse, Lamin, and anyone interested in contributing!_
 
 This repository contains benchmarking scripts & utilities for scRNA-seq data loaders and allows to collaboratively contribute new benchmarking results.
 
-You can choose between different benchmarking [dataset collections](https://lamin.ai/laminlabs/arrayloader-benchmarks/collections).
-
-<img width="700" height="481" alt="image" src="https://github.com/user-attachments/assets/b539b13a-9b50-4f66-9b51-16d32fd8566b" />
-<br>
-<br>
+## Quickstart
 
 Typical calls of the main benchmarking script are:
 
@@ -25,6 +21,14 @@ python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --
 python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --n_datasets 1  # run against the the first dataset, 2M cells
 python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --n_datasets 5  # run against the the first dataset, 10M cells
 ```
+<br>
+<br>
+
+You can choose between different benchmarking [dataset collections](https://lamin.ai/laminlabs/arrayloader-benchmarks/collections).
+
+<img width="700" height="481" alt="image" src="https://github.com/user-attachments/assets/b539b13a-9b50-4f66-9b51-16d32fd8566b" />
+<br>
+<br>
 
 When running the script, [parameters and results](https://lamin.ai/laminlabs/arrayloader-benchmarks/artifact/0EiozNVjberZTFHa) are automatically tracked in a parquet file, along with source code and datasets.
 
