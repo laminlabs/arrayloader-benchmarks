@@ -21,7 +21,6 @@ python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --
 python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --n_datasets 1  # run against the the first dataset, 2M cells
 python run_loading_benchmark_on_collection.py annbatch --collection Tahoe100M --n_datasets 5  # run against the the first dataset, 10M cells
 ```
-<br>
 
 You can choose between different benchmarking [dataset collections](https://lamin.ai/laminlabs/arrayloader-benchmarks/collections).
 
