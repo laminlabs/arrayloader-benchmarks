@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 from arrayloader_benchmarks import benchmark_loader, compute_spec
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
 
@@ -37,14 +38,14 @@ def get_datasets(
     return local_paths, sum(n_samples_collection)
 
 
-def run_scdataset(
+def get_scdataset_loader(
     local_paths: list[Path],
     block_size: int = 4,
     fetch_factor: int = 16,
     num_workers: int = 6,
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
-) -> float:
+) -> Iterable:
     # local imports so that it can be run without installing all dependencies
     from scdataset import BlockShuffling, scDataset
     from torch.utils.data import DataLoader
@@ -70,16 +71,15 @@ def run_scdataset(
         num_workers=num_workers,
         prefetch_factor=fetch_factor + 1,
     )
-    samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
-    return samples_per_sec
+    return loader
 
 
-def run_mappedcollection(
+def get_mappedcollection_loader(
     local_paths: list[Path],
     num_workers: int = 6,
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
-) -> float:
+) -> Iterable:
     mapped_collection = ln.core.MappedCollection(local_paths, parallel=True)
     loader = DataLoader(
         mapped_collection,
@@ -89,11 +89,10 @@ def run_mappedcollection(
         worker_init_fn=mapped_collection.torch_worker_init_fn,
         drop_last=True,
     )
-    samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
-    return samples_per_sec
+    return loader
 
 
-def run_annbatch(
+def get_annbatch_loader(
     local_paths: list[Path],
     chunk_size: int = 256,
     preload_nchunks: int = 64,
@@ -155,11 +154,9 @@ def run_annbatch(
             drop_last=True,
             collate_fn=collate_fn,
         )
-        samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
+        return loader
     else:
-        samples_per_sec, _, _ = benchmark_loader(ds, n_samples, batch_size)
-
-    return samples_per_sec
+        return ds
 
 
 @click.command()
@@ -217,7 +214,7 @@ def run(
     n_samples = min(n_samples, n_samples_collection)
 
     if tool == "annbatch":
-        n_samples_per_sec = run_annbatch(
+        loader = get_annbatch_loader(
             local_paths,
             chunk_size=chunk_size,
             preload_nchunks=preload_nchunks,
@@ -228,14 +225,14 @@ def run(
             include_obs=include_obs,
         )
     elif tool == "MappedCollection":
-        n_samples_per_sec = run_mappedcollection(
+        loader = get_mappedcollection_loader(
             local_paths,
             num_workers=num_workers,
             batch_size=batch_size,
             n_samples=n_samples,
         )
     elif tool == "scDataset":
-        n_samples_per_sec = run_scdataset(
+        loader = get_scdataset_loader(
             local_paths,
             block_size=block_size,
             fetch_factor=fetch_factor,
@@ -244,6 +241,9 @@ def run(
             n_samples=n_samples,
         )
 
+    n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
+
+    # collect results and parameters
     new_result = {
         "tool": tool,
         "collection": collection,
@@ -260,16 +260,14 @@ def run(
         "user": ln.setup.settings.user.handle,
     }
 
+    # save new result, appending to existing results if they exist
     results_key = "arrayloader_benchmarks_v2/tahoe100m_benchmark.parquet"
-
     try:
         df = ln.Artifact.get(key=results_key).load()
         df = pd.concat([df, pd.DataFrame([new_result])], ignore_index=True)
     except ln.Artifact.DoesNotExist:
         df = pd.DataFrame([new_result])
-
     ln.Artifact.from_dataframe(df, key=results_key).save()
-
     ln.finish()
 
 
