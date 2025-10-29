@@ -90,7 +90,7 @@ def benchmark(  # noqa: PLR0917
 
 
 if __name__ == "__main__":
-    ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
+    # ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
     ln.track(project="zjQ6EYzMXif4")
     benchmark()
     ln.finish()
