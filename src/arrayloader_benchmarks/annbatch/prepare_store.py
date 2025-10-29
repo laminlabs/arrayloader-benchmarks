@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import lamindb as ln
 import zarr
 import zarrs  # noqa
-from arrayloaders import create_store_from_h5ads
+from annbatch import create_anndata_collection
 from zarr.codecs import BloscCodec, BloscShuffle
 
 if TYPE_CHECKING:
@@ -62,12 +62,12 @@ if __name__ == "__main__":
         raise ValueError(err_msg)
 
     if not STORE_PATH.exists():
-        create_store_from_h5ads(
+        create_anndata_collection(
             [h5ads_paths / f"shard_{i}.h5ad" for i in range(N_SHARDS_INPUT)],
             STORE_PATH,
-            chunk_size=ZARR_CHUNK_SIZE,
-            shard_size=ZARR_SHARD_SIZE,
-            buffer_size=ANNDATA_SHARD_SIZE,
+            zarr_sparse_chunk_size=ZARR_CHUNK_SIZE,
+            zarr_sparse_shard_size=ZARR_SHARD_SIZE,
+            n_obs_per_dataset=ANNDATA_SHARD_SIZE,
             zarr_compressor=(COMPRESSOR,),
             shuffle=False,
             should_denseify=SHOULD_DENSIFY,
