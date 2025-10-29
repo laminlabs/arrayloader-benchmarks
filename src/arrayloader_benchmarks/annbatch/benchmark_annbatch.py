@@ -61,6 +61,7 @@ def benchmark(  # noqa: PLR0917
         chunk_size=chunk_size,
         preload_nchunks=preload_nchunks,
         batch_size=1 if use_torch_loader else batch_size,
+        preload_to_gpu=False,
     )
     ds.add_datasets(
         datasets=[ad.io.sparse_dataset(zarr.open(p)["X"]) for p in store_shards],
