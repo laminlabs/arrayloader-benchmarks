@@ -94,11 +94,13 @@ def benchmark(  # noqa: PLR0917, PLR0913
             drop_last=True,
             collate_fn=collate_fn,
         )
-        samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
+        samples_per_sec, _, _, total_time = benchmark_loader(
+            loader, n_samples, batch_size
+        )
     else:
-        samples_per_sec, _, _ = benchmark_loader(ds, n_samples, batch_size)
+        samples_per_sec, _, _, total_time = benchmark_loader(ds, n_samples, batch_size)
 
-    click.echo(json.dumps({"samples/sec": samples_per_sec}))
+    click.echo(json.dumps({"samples/sec": samples_per_sec, "total_time": total_time}))
 
 
 if __name__ == "__main__":
