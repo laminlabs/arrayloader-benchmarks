@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import warnings
+from pathlib import Path
 
 import anndata as ad
 import click
-import lamindb as ln
 import numpy as np
 import scipy.sparse as sp
 import zarr
@@ -34,6 +34,7 @@ def collate_fn(elems):
 
 
 @click.command()
+@click.option("--store_path", type=str, default="")
 @click.option("--chunk_size", type=int, default=256)
 @click.option("--preload_nchunks", type=int, default=8)
 @click.option("--use_torch_loader", type=bool, default=True)
@@ -43,6 +44,7 @@ def collate_fn(elems):
 @click.option("--include_obs", type=bool, default=True)
 @click.option("--preload_to_gpu", type=bool, default=False)
 def benchmark(  # noqa: PLR0917, PLR0913
+    store_path: str = "",
     chunk_size: int = 256,
     preload_nchunks: int = 64,
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
@@ -52,11 +54,19 @@ def benchmark(  # noqa: PLR0917, PLR0913
     include_obs: bool = True,  # noqa: FBT001, FBT002
     preload_to_gpu: bool = False,  # noqa: FBT001, FBT002
 ):
-    benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
-    collection = benchmarking_collections.get("LaJOdLd0xZ3v5ZBw0000")
-    store_shards = [
-        artifact.cache(batch_size=48) for artifact in collection.ordered_artifacts.all()
-    ]
+    if store_path:
+        store_shards = list(Path(store_path).glob("*.zarr"))
+    else:
+        import lamindb as ln
+
+        benchmarking_collections = ln.Collection.using(
+            "laminlabs/arrayloader-benchmarks"
+        )
+        collection = benchmarking_collections.get("LaJOdLd0xZ3v5ZBw0000")
+        store_shards = [
+            artifact.cache(batch_size=48)
+            for artifact in collection.ordered_artifacts.all()
+        ]
 
     ds = ZarrSparseDataset(
         shuffle=True,
@@ -92,7 +102,4 @@ def benchmark(  # noqa: PLR0917, PLR0913
 
 
 if __name__ == "__main__":
-    # ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
-    ln.track(project="zjQ6EYzMXif4")
     benchmark()
-    ln.finish()
