@@ -41,7 +41,8 @@ def collate_fn(elems):
 @click.option("--batch_size", type=int, default=4096)
 @click.option("--n_samples", type=int, default=2_000_000)
 @click.option("--include_obs", type=bool, default=True)
-def benchmark(  # noqa: PLR0917
+@click.option("--preload_to_gpu", type=bool, default=False)
+def benchmark(  # noqa: PLR0917, PLR0913
     chunk_size: int = 256,
     preload_nchunks: int = 64,
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
@@ -49,6 +50,7 @@ def benchmark(  # noqa: PLR0917
     batch_size: int = 4096,
     n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
+    preload_to_gpu: bool = False,  # noqa: FBT001, FBT002
 ):
     benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
     collection = benchmarking_collections.get("LaJOdLd0xZ3v5ZBw0000")
@@ -61,7 +63,7 @@ def benchmark(  # noqa: PLR0917
         chunk_size=chunk_size,
         preload_nchunks=preload_nchunks,
         batch_size=1 if use_torch_loader else batch_size,
-        preload_to_gpu=False,
+        preload_to_gpu=preload_to_gpu,
     )
     ds.add_datasets(
         datasets=[ad.io.sparse_dataset(zarr.open(p)["X"]) for p in store_shards],
