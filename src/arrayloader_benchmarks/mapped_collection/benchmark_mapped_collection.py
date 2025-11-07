@@ -42,7 +42,15 @@ def benchmark(
 
     samples_per_sec, _, _, total_time = benchmark_loader(loader, n_samples, batch_size)
 
-    click.echo(json.dumps({"samples/sec": samples_per_sec, "total_time": total_time}))
+    click.echo(
+        json.dumps(
+            {
+                "loader": "MappedCollection",
+                "samples/sec": samples_per_sec,
+                "total_time": total_time,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
