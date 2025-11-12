@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 def get_datasets(
     *, collection_key: str, cache: bool = True, n_datasets: int = 1
 ) -> tuple[list[Path], int]:
-    benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
+    benchmarking_collections = ln.Collection.connect("laminlabs/arrayloader-benchmarks")
     collection = benchmarking_collections.get(key=collection_key)
     if n_datasets == -1:
         n_datasets = collection.artifacts.count()
