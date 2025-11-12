@@ -72,7 +72,7 @@ def benchmark(  # noqa: PLR0917, PLR0913
         shuffle=True,
         chunk_size=chunk_size,
         preload_nchunks=preload_nchunks,
-        batch_size=1 if use_torch_loader else batch_size,
+        batch_size=batch_size,
         preload_to_gpu=preload_to_gpu,
     )
     ds.add_datasets(
@@ -89,10 +89,9 @@ def benchmark(  # noqa: PLR0917, PLR0913
     if use_torch_loader:
         loader = DataLoader(
             ds,
-            batch_size=batch_size,
+            batch_size=None,
             num_workers=num_workers,
-            drop_last=True,
-            collate_fn=collate_fn,
+            multiprocessing_context="spawn",
         )
         samples_per_sec, _, _, total_time = benchmark_loader(
             loader, n_samples, batch_size
