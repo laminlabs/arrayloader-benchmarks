@@ -30,7 +30,7 @@ if __name__ == "__main__":
         "9L9HZ55HqUL0aqaR0000",
         "vn5cUJCHbjpPPsZx0000",
     ]
-    benchmarking_artifacts = ln.Artifact.using("laminlabs/arrayloader-benchmarks")
+    benchmarking_artifacts = ln.Artifact.connect("laminlabs/arrayloader-benchmarks")
     file_paths = [benchmarking_artifacts.get(uid).cache() for uid in artifact_uids]
 
     # Create shuffled and sharded h5ad files --- FULL GENE SPACE

@@ -45,7 +45,7 @@ if __name__ == "__main__":
     ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
     ln.track("zqsf9jOCh6pd", project="zjQ6EYzMXif4")
 
-    benchmarking_collections = ln.Collection.using("laminlabs/arrayloader-benchmarks")
+    benchmarking_collections = ln.Collection.connect("laminlabs/arrayloader-benchmarks")
 
     if GENE_SPACE == "FULL":
         h5ads_paths = (
