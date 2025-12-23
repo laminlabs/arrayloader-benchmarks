@@ -74,6 +74,7 @@ def benchmark(  # noqa: PLR0917, PLR0913
         preload_nchunks=preload_nchunks,
         batch_size=batch_size,
         preload_to_gpu=preload_to_gpu,
+        drop_last=True,
     )
     ds.add_datasets(
         datasets=[ad.io.sparse_dataset(zarr.open(p)["X"]) for p in store_shards],
@@ -93,11 +94,9 @@ def benchmark(  # noqa: PLR0917, PLR0913
             num_workers=num_workers,
             multiprocessing_context="spawn",
         )
-        samples_per_sec, _, _, total_time = benchmark_loader(
-            loader, n_samples, batch_size
-        )
+        samples_per_sec, total_time = benchmark_loader(loader, n_samples, batch_size)
     else:
-        samples_per_sec, _, _, total_time = benchmark_loader(ds, n_samples, batch_size)
+        samples_per_sec, total_time = benchmark_loader(ds, n_samples, batch_size)
 
     click.echo(
         json.dumps(

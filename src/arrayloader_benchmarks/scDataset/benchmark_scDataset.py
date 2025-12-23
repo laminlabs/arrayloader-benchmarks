@@ -57,9 +57,10 @@ def benchmark(  # noqa: PLR0917
         batch_size=None,
         num_workers=num_workers,
         prefetch_factor=fetch_factor + 1,
+        drop_last=True,
     )
 
-    samples_per_sec, _, _, total_time = benchmark_loader(loader, n_samples, batch_size)
+    samples_per_sec, total_time = benchmark_loader(loader, n_samples, batch_size)
 
     click.echo(
         json.dumps(
