@@ -262,7 +262,11 @@ def run(
         df = pd.concat([df, pd.DataFrame([new_result])], ignore_index=True)
     except ln.Artifact.DoesNotExist:
         df = pd.DataFrame([new_result])
-    ln.Artifact.from_dataframe(df, key=results_key).save()
+    if ln.setup.settings.instance.slug == "laminlabs/arrayloader-benchmarks":
+        storage = ln.Storage.get(root="s3://lamin-us-west-2/wXDsTYYd")
+    else:
+        storage = None
+    ln.Artifact.from_dataframe(df, key=results_key, storage=storage).save()
 
 
 if __name__ == "__main__":
