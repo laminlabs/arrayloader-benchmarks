@@ -9,7 +9,7 @@ import click
 import lamindb as ln
 from torch.utils.data import DataLoader
 
-from arrayloader_benchmarks import benchmark_loader
+from arrayloader_benchmarks import benchmark_loader, compute_spec
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -290,8 +290,15 @@ def run(
             "collection": collection_key,
             "n_datasets": n_datasets,
             "n_samples_per_sec": n_samples_per_sec,
-            "n_samples": n_samples,
+            "n_samples_loaded": n_samples,
             "n_samples_collection": n_samples_collection,
+            "num_workers": num_workers,
+            "batch_size": batch_size,
+            "chunk_size": chunk_size,
+            "compute_spec": compute_spec.get_aws_sagemaker_instance_type(),
+            "run": ln.context.run,
+            "timestamp": datetime.datetime.now(),
+            "user": ln.setup.settings.user.handle,
         },
     ).save()
 
