@@ -34,9 +34,9 @@ You can choose between different benchmarking [dataset collections](https://lami
 <br>
 <br>
 
-When running the script, [parameters and results](https://lamin.ai/laminlabs/arrayloader-benchmarks/artifact/0EiozNVjberZTFHa) are automatically tracked in a parquet file, along with source code, run environment, and input and output datasets.
+When running the script, [results]([https://lamin.ai/laminlabs/arrayloader-benchmarks/artifact/0EiozNVjberZTFHa](https://lamin.ai/laminlabs/arrayloader-benchmarks/record/A4z7dYZeiCjkyNcl?view=tabular)) are automatically tracked in a sheet, along with source code, run environment, and input and output datasets.
 
-<img width="1000" src="https://github.com/user-attachments/assets/60c3262f-1bdc-44a4-a488-4784918a6905" />
+<img width="1000" alt="image" src="https://github.com/user-attachments/assets/f2870b24-6999-4de5-99d2-ab6c23c66f55" />
 <br>
 <br>
 
