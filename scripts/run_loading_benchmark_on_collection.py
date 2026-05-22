@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import anndata as ad
 import click
 import lamindb as ln
-import pandas as pd
 from torch.utils.data import DataLoader
 
 from arrayloader_benchmarks import benchmark_loader, compute_spec
@@ -255,18 +254,11 @@ def run(
         "user": ln.setup.settings.user.handle,
     }
 
-    # save new result, appending to existing results if they exist
-    results_key = "arrayloader_benchmarks_v2/tahoe100m_benchmark.parquet"
-    try:
-        df = ln.Artifact.get(key=results_key).load()
-        df = pd.concat([df, pd.DataFrame([new_result])], ignore_index=True)
-    except ln.Artifact.DoesNotExist:
-        df = pd.DataFrame([new_result])
-    if ln.setup.settings.instance.slug == "laminlabs/arrayloader-benchmarks":
-        storage = ln.Storage.get(root="s3://lamin-us-west-2/wXDsTYYd")
-    else:
-        storage = None
-    ln.Artifact.from_dataframe(df, key=results_key, storage=storage).save()
+    benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
+    task = ln.Record(
+        name="run_loading_benchmark_on_collection.py", type=benchmarks, is_type=True
+    ).save()
+    ln.Record(type=task, features=new_result).save()
 
 
 if __name__ == "__main__":
