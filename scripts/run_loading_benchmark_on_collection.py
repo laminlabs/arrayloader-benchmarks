@@ -276,11 +276,11 @@ def run(
         )
 
     n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
-    # sheet = ln.Record.filter(
-    #     name="run_loading_benchmark_on_collection.py"
-    # ).one_or_none()
-    # if sheet is None:
-    sheet = _create_benchmarking_sheet()
+    sheet = ln.Record.filter(
+        name="run_loading_benchmark_on_collection.py"
+    ).one_or_none()
+    if sheet is None:
+        sheet = _create_benchmarking_sheet()
 
     ln.Record(
         type=sheet,
