@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import anndata as ad
 import click
 import lamindb as ln
-import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
 
@@ -97,18 +96,13 @@ def get_annbatch_loader(
     chunk_size: int = 256,
     preload_nchunks: int = 64,
     use_torch_loader: bool = False,  # noqa: FBT001, FBT002
-    num_workers: int = 6,
     batch_size: int = 4096,
-    n_samples: int = 2_000_000,
     include_obs: bool = True,  # noqa: FBT001, FBT002
 ):
     # local imports so that it can be run without installing all dependencies
-    import scipy.sparse as sp
     import zarr
     import zarrs  # noqa
-    from arrayloaders import ZarrSparseDataset
-    from torch.utils.data import DataLoader
-    from torch.utils.dlpack import from_dlpack
+    from annbatch import Loader
 
     zarr.config.set(
         {
@@ -125,38 +119,28 @@ def get_annbatch_loader(
         module="zarr.codecs.vlen_utf8",
     )
 
-    def collate_fn(elems):
-        batch_x = sp.vstack([v[0] for v in elems])
-        batch_obs = np.concatenate([v[1] for v in elems])
-        return from_dlpack(batch_x), from_dlpack(batch_obs)
-
-    ds = ZarrSparseDataset(
+    loader = Loader(
         shuffle=True,
         chunk_size=chunk_size,
         preload_nchunks=preload_nchunks,
-        batch_size=1 if use_torch_loader else batch_size,
+        batch_size=batch_size,
+        preload_to_gpu=False,
+        to_torch=use_torch_loader,
     )
-    ds.add_datasets(
+    loader.add_datasets(
         datasets=[ad.io.sparse_dataset(zarr.open(p)["X"]) for p in local_paths],
-        obs=[
-            ad.io.read_elem(zarr.open(p)["obs"])["cell_line"].to_numpy()
-            for p in local_paths
-        ]
+        obs=[ad.io.read_elem(zarr.open(p)["obs"])[["cell_line"]] for p in local_paths]
         if include_obs
         else None,
     )
-    n_samples = n_samples if n_samples != -1 else len(ds)
-    if use_torch_loader:
-        loader = DataLoader(
-            ds,
-            batch_size=batch_size,
-            num_workers=num_workers,
-            drop_last=True,
-            collate_fn=collate_fn,
-        )
-        return loader
-    else:
-        return ds
+    return loader
+
+
+def _largest_divisor_at_most(value: int, upper_bound: int) -> int:
+    for divisor in range(min(value, upper_bound), 0, -1):
+        if value % divisor == 0:
+            return divisor
+    return 1
 
 
 @click.command()
@@ -211,7 +195,22 @@ def run(
         print(f"reducing batch size from {batch_size} to {n_samples_collection // 10}")
         batch_size = n_samples_collection // 10
 
-    n_samples = min(n_samples, n_samples_collection)
+    if tool == "annbatch":
+        preload_window = chunk_size * preload_nchunks
+        if preload_window % batch_size != 0:
+            adjusted_batch_size = _largest_divisor_at_most(preload_window, batch_size)
+            print(
+                "adjusting annbatch batch size from "
+                f"{batch_size} to {adjusted_batch_size} so that "
+                "chunk_size * preload_nchunks is divisible by batch_size"
+            )
+            batch_size = adjusted_batch_size
+
+    n_samples = (
+        n_samples_collection
+        if n_samples == -1
+        else min(n_samples, n_samples_collection)
+    )
 
     if tool == "annbatch":
         loader = get_annbatch_loader(
@@ -219,9 +218,7 @@ def run(
             chunk_size=chunk_size,
             preload_nchunks=preload_nchunks,
             use_torch_loader=use_torch_loader,
-            num_workers=num_workers,
             batch_size=batch_size,
-            n_samples=n_samples,
             include_obs=include_obs,
         )
     elif tool == "MappedCollection":

@@ -36,7 +36,7 @@ classifiers = [
 dependencies = ["lamindb>1.11", "torch"]
 
 [project.optional-dependencies]
-arrayloaders = ["arrayloaders@git+https://github.com/laminlabs/arrayloaders"]
+annbatch = ["annbatch"]
 scdataset = ["scdataset"]
 test = ["pytest", "pytest-xdist"]
 
