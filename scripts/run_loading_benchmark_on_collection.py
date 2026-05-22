@@ -22,6 +22,9 @@ ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks
 def get_datasets(*, collection_key: str, n_datasets: int = 1) -> tuple[list[Path], int]:
     db = ln.DB("laminlabs/arrayloader-benchmarks")
     collection = db.Collection.get(key=collection_key)
+    if ln.setup.settings.instance.slug != "laminlabs/arrayloader-benchmarks":
+        # transfer in case the collection is on a different instance
+        collection.save()
     if n_datasets == -1:
         n_datasets = collection.artifacts.count()
     local_paths = [
