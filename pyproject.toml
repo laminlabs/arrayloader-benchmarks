@@ -44,10 +44,10 @@ test = ["pytest", "pytest-xdist"]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/arrayloader_benchmarks"]
+packages = ["arrayloader_benchmarks"]
 
 [tool.ruff]
-src = ["src"]
+src = ["."]
 
 [tool.ruff.format]
 docstring-code-format = true
