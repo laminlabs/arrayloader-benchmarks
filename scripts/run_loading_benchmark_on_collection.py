@@ -272,7 +272,7 @@ def run(
         features["chunk_size"]: chunk_size,
         features["compute_spec"]: compute_spec.get_aws_sagemaker_instance_type(),
         features["run"]: ln.context.run,
-        features["timestamp"]: datetime.datetime.now(datetime.UTC),
+        features["timestamp"]: datetime.datetime.now(),
         features["user"]: ln.setup.settings.user.handle,
     }
 
