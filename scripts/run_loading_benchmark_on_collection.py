@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import anndata as ad
 import click
 import lamindb as ln
-import pandas as pd
 from torch.utils.data import DataLoader
 
 from arrayloader_benchmarks import benchmark_loader, compute_spec
@@ -23,6 +22,9 @@ ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks
 def get_datasets(*, collection_key: str, n_datasets: int = 1) -> tuple[list[Path], int]:
     db = ln.DB("laminlabs/arrayloader-benchmarks")
     collection = db.Collection.get(key=collection_key)
+    if ln.setup.settings.instance.slug != "laminlabs/arrayloader-benchmarks":
+        # transfer in case the collection is on a different instance
+        collection.save()
     if n_datasets == -1:
         n_datasets = collection.artifacts.count()
     local_paths = [
@@ -144,6 +146,64 @@ def _largest_divisor_at_most(value: int, upper_bound: int) -> int:
     return 1
 
 
+def _log_benchmark_result(
+    *,
+    tool: str,
+    collection_key: str,
+    n_datasets: int,
+    n_samples_per_sec: float,
+    n_samples: int,
+    n_samples_collection: int,
+    num_workers: int,
+    batch_size: int,
+    chunk_size: int,
+) -> None:
+    benchmark_feature_type = ln.Feature(name="Benchmarks", is_type=True).save()
+    benchmark_features = {
+        "tool": str,
+        "collection": ln.Collection,
+        "n_datasets": int,
+        "n_samples_per_sec": float,
+        "n_samples_loaded": int,
+        "n_samples_collection": int,
+        "num_workers": int,
+        "batch_size": int,
+        "chunk_size": int,
+        "compute_spec": str,
+        "run": ln.Run,
+        "timestamp": datetime.datetime,
+        "user": ln.User,
+    }
+    features = {
+        feature_name: ln.Feature(
+            name=feature_name, dtype=dtype, type=benchmark_feature_type
+        ).save()
+        for feature_name, dtype in benchmark_features.items()
+    }
+
+    new_result = {
+        features["tool"]: tool,
+        features["collection"]: collection_key,
+        features["n_datasets"]: n_datasets,
+        features["n_samples_per_sec"]: n_samples_per_sec,
+        features["n_samples_loaded"]: n_samples,
+        features["n_samples_collection"]: n_samples_collection,
+        features["num_workers"]: num_workers,
+        features["batch_size"]: batch_size,
+        features["chunk_size"]: chunk_size,
+        features["compute_spec"]: compute_spec.get_aws_sagemaker_instance_type(),
+        features["run"]: ln.context.run,
+        features["timestamp"]: datetime.datetime.now(),
+        features["user"]: ln.setup.settings.user.handle,
+    }
+
+    benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
+    task = ln.Record(
+        name="run_loading_benchmark_on_collection.py", type=benchmarks, is_type=True
+    ).save()
+    ln.Record(type=task, features=new_result).save()
+
+
 @click.command()
 @click.argument(
     "tool", type=click.Choice(["annbatch", "MappedCollection", "scDataset"])
@@ -180,14 +240,14 @@ def run(
     n_datasets: int = 1,
     project: str = "Arrayloader benchmarks v2",
 ):
-    if tool in {"MappedCollection", "scDataset"}:
-        local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_h5ad", n_datasets=n_datasets
-        )
-    else:
-        local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_zarr", n_datasets=n_datasets
-        )
+    collection_key = (
+        f"{collection}_h5ad"
+        if tool in {"MappedCollection", "scDataset"}
+        else f"{collection}_zarr"
+    )
+    local_paths, n_samples_collection = get_datasets(
+        collection_key=collection_key, n_datasets=n_datasets
+    )
 
     if 10 * batch_size > n_samples_collection:
         print(f"reducing batch size from {batch_size} to {n_samples_collection // 10}")
@@ -238,35 +298,17 @@ def run(
 
     n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
 
-    # collect results and parameters
-    new_result = {
-        "tool": tool,
-        "collection": collection,
-        "n_datasets": n_datasets,
-        "n_samples_per_sec": n_samples_per_sec,
-        "n_samples_loaded": n_samples,
-        "n_samples_collection": n_samples_collection,
-        "num_workers": num_workers,
-        "batch_size": batch_size,
-        "chunk_size": chunk_size,
-        "compute_spec": compute_spec.get_aws_sagemaker_instance_type(),
-        "run_uid": ln.context.run.uid,
-        "timestamp": datetime.datetime.now(datetime.UTC),
-        "user": ln.setup.settings.user.handle,
-    }
-
-    # save new result, appending to existing results if they exist
-    results_key = "arrayloader_benchmarks_v2/tahoe100m_benchmark.parquet"
-    try:
-        df = ln.Artifact.get(key=results_key).load()
-        df = pd.concat([df, pd.DataFrame([new_result])], ignore_index=True)
-    except ln.Artifact.DoesNotExist:
-        df = pd.DataFrame([new_result])
-    if ln.setup.settings.instance.slug == "laminlabs/arrayloader-benchmarks":
-        storage = ln.Storage.get(root="s3://lamin-us-west-2/wXDsTYYd")
-    else:
-        storage = None
-    ln.Artifact.from_dataframe(df, key=results_key, storage=storage).save()
+    _log_benchmark_result(
+        tool=tool,
+        collection_key=collection_key,
+        n_datasets=n_datasets,
+        n_samples_per_sec=n_samples_per_sec,
+        n_samples=n_samples,
+        n_samples_collection=n_samples_collection,
+        num_workers=num_workers,
+        batch_size=batch_size,
+        chunk_size=chunk_size,
+    )
 
 
 if __name__ == "__main__":
