@@ -146,6 +146,64 @@ def _largest_divisor_at_most(value: int, upper_bound: int) -> int:
     return 1
 
 
+def _log_benchmark_result(
+    *,
+    tool: str,
+    collection_key: str,
+    n_datasets: int,
+    n_samples_per_sec: float,
+    n_samples: int,
+    n_samples_collection: int,
+    num_workers: int,
+    batch_size: int,
+    chunk_size: int,
+) -> None:
+    benchmark_feature_type = ln.Feature(name="Benchmarks", is_type=True).save()
+    benchmark_features = {
+        "tool": str,
+        "collection": ln.Collection,
+        "n_datasets": int,
+        "n_samples_per_sec": float,
+        "n_samples_loaded": int,
+        "n_samples_collection": int,
+        "num_workers": int,
+        "batch_size": int,
+        "chunk_size": int,
+        "compute_spec": str,
+        "run": ln.Run,
+        "timestamp": datetime.datetime,
+        "user": ln.User,
+    }
+    features = {
+        feature_name: ln.Feature(
+            name=feature_name, dtype=dtype, type=benchmark_feature_type
+        ).save()
+        for feature_name, dtype in benchmark_features.items()
+    }
+
+    new_result = {
+        features["tool"]: tool,
+        features["collection"]: collection_key,
+        features["n_datasets"]: n_datasets,
+        features["n_samples_per_sec"]: n_samples_per_sec,
+        features["n_samples_loaded"]: n_samples,
+        features["n_samples_collection"]: n_samples_collection,
+        features["num_workers"]: num_workers,
+        features["batch_size"]: batch_size,
+        features["chunk_size"]: chunk_size,
+        features["compute_spec"]: compute_spec.get_aws_sagemaker_instance_type(),
+        features["run"]: ln.context.run,
+        features["timestamp"]: datetime.datetime.now(),
+        features["user"]: ln.setup.settings.user.handle,
+    }
+
+    benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
+    task = ln.Record(
+        name="run_loading_benchmark_on_collection.py", type=benchmarks, is_type=True
+    ).save()
+    ln.Record(type=task, features=new_result).save()
+
+
 @click.command()
 @click.argument(
     "tool", type=click.Choice(["annbatch", "MappedCollection", "scDataset"])
@@ -182,14 +240,14 @@ def run(
     n_datasets: int = 1,
     project: str = "Arrayloader benchmarks v2",
 ):
-    if tool in {"MappedCollection", "scDataset"}:
-        local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_h5ad", n_datasets=n_datasets
-        )
-    else:
-        local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_zarr", n_datasets=n_datasets
-        )
+    collection_key = (
+        f"{collection}_h5ad"
+        if tool in {"MappedCollection", "scDataset"}
+        else f"{collection}_zarr"
+    )
+    local_paths, n_samples_collection = get_datasets(
+        collection_key=collection_key, n_datasets=n_datasets
+    )
 
     if 10 * batch_size > n_samples_collection:
         print(f"reducing batch size from {batch_size} to {n_samples_collection // 10}")
@@ -240,50 +298,17 @@ def run(
 
     n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
 
-    benchmark_feature_type = ln.Feature(name="Benchmarks", is_type=True).save()
-    benchmark_features = {
-        "tool": str,
-        "collection": ln.Collection,
-        "n_datasets": int,
-        "n_samples_per_sec": float,
-        "n_samples_loaded": int,
-        "n_samples_collection": int,
-        "num_workers": int,
-        "batch_size": int,
-        "chunk_size": int,
-        "compute_spec": str,
-        "run": ln.Run,
-        "timestamp": datetime.datetime,
-        "user": ln.User,
-    }
-    features = {
-        feature_name: ln.Feature(
-            name=feature_name, dtype=dtype, type=benchmark_feature_type
-        ).save()
-        for feature_name, dtype in benchmark_features.items()
-    }
-
-    new_result = {
-        features["tool"]: tool,
-        features["collection"]: collection,
-        features["n_datasets"]: n_datasets,
-        features["n_samples_per_sec"]: n_samples_per_sec,
-        features["n_samples_loaded"]: n_samples,
-        features["n_samples_collection"]: n_samples_collection,
-        features["num_workers"]: num_workers,
-        features["batch_size"]: batch_size,
-        features["chunk_size"]: chunk_size,
-        features["compute_spec"]: compute_spec.get_aws_sagemaker_instance_type(),
-        features["run"]: ln.context.run,
-        features["timestamp"]: datetime.datetime.now(),
-        features["user"]: ln.setup.settings.user.handle,
-    }
-
-    benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
-    task = ln.Record(
-        name="run_loading_benchmark_on_collection.py", type=benchmarks, is_type=True
-    ).save()
-    ln.Record(type=task, features=new_result).save()
+    _log_benchmark_result(
+        tool=tool,
+        collection_key=collection_key,
+        n_datasets=n_datasets,
+        n_samples_per_sec=n_samples_per_sec,
+        n_samples=n_samples,
+        n_samples_collection=n_samples_collection,
+        num_workers=num_workers,
+        batch_size=batch_size,
+        chunk_size=chunk_size,
+    )
 
 
 if __name__ == "__main__":
