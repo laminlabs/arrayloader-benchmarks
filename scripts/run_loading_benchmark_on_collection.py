@@ -16,12 +16,13 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
 
+# comment this line out if you don't want to enforce running committed code
+ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
 
-def get_datasets(
-    *, collection_key: str, cache: bool = True, n_datasets: int = 1
-) -> tuple[list[Path], int]:
-    benchmarking_collections = ln.Collection.connect("laminlabs/arrayloader-benchmarks")
-    collection = benchmarking_collections.get(key=collection_key)
+
+def get_datasets(*, collection_key: str, n_datasets: int = 1) -> tuple[list[Path], int]:
+    db = ln.DB("laminlabs/arrayloader-benchmarks")
+    collection = db.Collection.get(key=collection_key)
     if n_datasets == -1:
         n_datasets = collection.artifacts.count()
     local_paths = [
@@ -163,6 +164,7 @@ def _largest_divisor_at_most(value: int, upper_bound: int) -> int:
 @click.option("--include_obs", type=bool, default=True)
 @click.option("--n_datasets", type=int, default=1)
 @click.option("--project", type=str, default="Arrayloader benchmarks v2")
+@ln.flow("LDSa3IJYQkbm")
 def run(
     tool: str,  # No default value since it's required
     collection: str = "Tahoe100M_tiny",
@@ -178,17 +180,13 @@ def run(
     n_datasets: int = 1,
     project: str = "Arrayloader benchmarks v2",
 ):
-    # comment this line out if you don't want to enforce running committed code
-    ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
-    ln.track("LDSa3IJYQkbm", project=project)
-
     if tool in {"MappedCollection", "scDataset"}:
         local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_h5ad", cache=True, n_datasets=n_datasets
+            collection_key=f"{collection}_h5ad", n_datasets=n_datasets
         )
     else:
         local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_zarr", cache=True, n_datasets=n_datasets
+            collection_key=f"{collection}_zarr", n_datasets=n_datasets
         )
 
     if 10 * batch_size > n_samples_collection:
@@ -265,7 +263,6 @@ def run(
     except ln.Artifact.DoesNotExist:
         df = pd.DataFrame([new_result])
     ln.Artifact.from_dataframe(df, key=results_key).save()
-    ln.finish()
 
 
 if __name__ == "__main__":
