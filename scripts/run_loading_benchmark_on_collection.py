@@ -237,23 +237,6 @@ def run(
 
     n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
 
-    # collect results and parameters
-    new_result = {
-        "tool": tool,
-        "collection": collection,
-        "n_datasets": n_datasets,
-        "n_samples_per_sec": n_samples_per_sec,
-        "n_samples_loaded": n_samples,
-        "n_samples_collection": n_samples_collection,
-        "num_workers": num_workers,
-        "batch_size": batch_size,
-        "chunk_size": chunk_size,
-        "compute_spec": compute_spec.get_aws_sagemaker_instance_type(),
-        "run_uid": ln.context.run.uid,
-        "timestamp": datetime.datetime.now(datetime.UTC),
-        "user": ln.setup.settings.user.handle,
-    }
-
     benchmark_feature_type = ln.Feature(name="Benchmarks", is_type=True).save()
     benchmark_features = {
         "tool": str,
@@ -270,8 +253,28 @@ def run(
         "timestamp": datetime.datetime,
         "user": ln.User,
     }
-    for feature_name, dtype in benchmark_features.items():
-        ln.Feature(name=feature_name, type=benchmark_feature_type, dtype=dtype).save()
+    features = {
+        feature_name: ln.Feature(
+            name=feature_name, dtype=dtype, type=benchmark_feature_type
+        ).save()
+        for feature_name, dtype in benchmark_features.items()
+    }
+
+    new_result = {
+        features["tool"]: tool,
+        features["collection"]: collection,
+        features["n_datasets"]: n_datasets,
+        features["n_samples_per_sec"]: n_samples_per_sec,
+        features["n_samples_loaded"]: n_samples,
+        features["n_samples_collection"]: n_samples_collection,
+        features["num_workers"]: num_workers,
+        features["batch_size"]: batch_size,
+        features["chunk_size"]: chunk_size,
+        features["compute_spec"]: compute_spec.get_aws_sagemaker_instance_type(),
+        features["run"]: ln.context.run,
+        features["timestamp"]: datetime.datetime.now(datetime.UTC),
+        features["user"]: ln.setup.settings.user,
+    }
 
     benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
     task = ln.Record(
