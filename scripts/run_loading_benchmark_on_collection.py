@@ -273,7 +273,7 @@ def run(
         features["compute_spec"]: compute_spec.get_aws_sagemaker_instance_type(),
         features["run"]: ln.context.run,
         features["timestamp"]: datetime.datetime.now(datetime.UTC),
-        features["user"]: ln.setup.settings.user,
+        features["user"]: ln.setup.settings.user.handle,
     }
 
     benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
