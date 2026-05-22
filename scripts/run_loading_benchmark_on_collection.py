@@ -18,22 +18,6 @@ if TYPE_CHECKING:
 # comment this line out if you don't want to enforce running committed code
 ln.settings.sync_git_repo = "https://github.com/laminlabs/arrayloader-benchmarks"
 
-BENCHMARK_FEATURE_DTYPES = {
-    "tool": str,
-    "collection": ln.Collection,
-    "n_datasets": int,
-    "n_samples_per_sec": float,
-    "n_samples_loaded": int,
-    "n_samples_collection": int,
-    "num_workers": int,
-    "batch_size": int,
-    "chunk_size": int,
-    "compute_spec": str,
-    "run": ln.Run,
-    "timestamp": datetime.datetime,
-    "user": ln.User,
-}
-
 
 def get_datasets(*, collection_key: str, n_datasets: int = 1) -> tuple[list[Path], int]:
     db = ln.DB("laminlabs/arrayloader-benchmarks")
@@ -164,11 +148,26 @@ def _largest_divisor_at_most(value: int, upper_bound: int) -> int:
 
 def _create_benchmarking_sheet() -> ln.Record:
     benchmark_feature_type = ln.Feature(name="Benchmarks", is_type=True).save()
+    feature_dtypes = {
+        "tool": str,
+        "collection": ln.Collection,
+        "n_datasets": int,
+        "n_samples_per_sec": float,
+        "n_samples_loaded": int,
+        "n_samples_collection": int,
+        "num_workers": int,
+        "batch_size": int,
+        "chunk_size": int,
+        "compute_spec": str,
+        "run": ln.Run,
+        "timestamp": datetime.datetime,
+        "user": ln.User,
+    }
     features = {
         feature_name: ln.Feature(
             name=feature_name, dtype=dtype, type=benchmark_feature_type
         ).save()
-        for feature_name, dtype in BENCHMARK_FEATURE_DTYPES.items()
+        for feature_name, dtype in feature_dtypes.items()
     }
     schema = ln.Schema(
         list(features.values()), name="loading_benchmark_result_schema"
@@ -277,11 +276,11 @@ def run(
         )
 
     n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
-    sheet = ln.Record.filter(
-        name="run_loading_benchmark_on_collection.py"
-    ).one_or_none()
-    if sheet is None:
-        sheet = _create_benchmarking_sheet()
+    # sheet = ln.Record.filter(
+    #     name="run_loading_benchmark_on_collection.py"
+    # ).one_or_none()
+    # if sheet is None:
+    sheet = _create_benchmarking_sheet()
 
     ln.Record(
         type=sheet,
