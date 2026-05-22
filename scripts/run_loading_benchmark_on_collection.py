@@ -136,6 +136,13 @@ def get_annbatch_loader(
     return loader
 
 
+def _largest_divisor_at_most(value: int, upper_bound: int) -> int:
+    for divisor in range(min(value, upper_bound), 0, -1):
+        if value % divisor == 0:
+            return divisor
+    return 1
+
+
 @click.command()
 @click.argument(
     "tool", type=click.Choice(["annbatch", "MappedCollection", "scDataset"])
@@ -187,6 +194,17 @@ def run(
     if 10 * batch_size > n_samples_collection:
         print(f"reducing batch size from {batch_size} to {n_samples_collection // 10}")
         batch_size = n_samples_collection // 10
+
+    if tool == "annbatch":
+        preload_window = chunk_size * preload_nchunks
+        if preload_window % batch_size != 0:
+            adjusted_batch_size = _largest_divisor_at_most(preload_window, batch_size)
+            print(
+                "adjusting annbatch batch size from "
+                f"{batch_size} to {adjusted_batch_size} so that "
+                "chunk_size * preload_nchunks is divisible by batch_size"
+            )
+            batch_size = adjusted_batch_size
 
     n_samples = (
         n_samples_collection
