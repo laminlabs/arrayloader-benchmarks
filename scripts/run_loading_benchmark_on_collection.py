@@ -254,6 +254,25 @@ def run(
         "user": ln.setup.settings.user.handle,
     }
 
+    benchmark_feature_type = ln.Feature(name="Benchmarks", is_type=True).save()
+    benchmark_features = {
+        "tool": str,
+        "collection": ln.Collection,
+        "n_datasets": int,
+        "n_samples_per_sec": float,
+        "n_samples_loaded": int,
+        "n_samples_collection": int,
+        "num_workers": int,
+        "batch_size": int,
+        "chunk_size": int,
+        "compute_spec": str,
+        "run": ln.Run,
+        "timestamp": datetime.datetime,
+        "user": ln.User,
+    }
+    for feature_name, dtype in benchmark_features.items():
+        ln.Feature(name=feature_name, type=benchmark_feature_type, dtype=dtype).save()
+
     benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
     task = ln.Record(
         name="run_loading_benchmark_on_collection.py", type=benchmarks, is_type=True
