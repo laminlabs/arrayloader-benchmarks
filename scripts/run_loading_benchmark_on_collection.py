@@ -182,11 +182,11 @@ def run(
 ):
     if tool in {"MappedCollection", "scDataset"}:
         local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_h5ad", cache=True, n_datasets=n_datasets
+            collection_key=f"{collection}_h5ad", n_datasets=n_datasets
         )
     else:
         local_paths, n_samples_collection = get_datasets(
-            collection_key=f"{collection}_zarr", cache=True, n_datasets=n_datasets
+            collection_key=f"{collection}_zarr", n_datasets=n_datasets
         )
 
     if 10 * batch_size > n_samples_collection:
