@@ -106,7 +106,7 @@ def get_annbatch_loader(
     import scipy.sparse as sp
     import zarr
     import zarrs  # noqa
-    from arrayloaders import ZarrSparseDataset
+    from annbatch import ZarrSparseDataset
     from torch.utils.data import DataLoader
     from torch.utils.dlpack import from_dlpack
 
