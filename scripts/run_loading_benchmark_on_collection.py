@@ -128,7 +128,7 @@ def get_annbatch_loader(
         preload_nchunks=preload_nchunks,
         batch_size=batch_size,
         preload_to_gpu=False,
-        to_torch=use_torch_loader,
+        to="torch" if use_torch_loader else None,
     )
     loader.add_datasets(
         datasets=[ad.io.sparse_dataset(zarr.open(p)["X"]) for p in local_paths],
