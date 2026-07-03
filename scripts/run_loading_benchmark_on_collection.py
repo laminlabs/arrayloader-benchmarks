@@ -175,7 +175,7 @@ def _create_benchmarking_sheet() -> ln.Record:
 
     benchmarks = ln.Record(name="Benchmarks", is_type=True).save()
     sheet = ln.Record(
-        name="run_loading_benchmark_on_collection.py",
+        name="run_loading_benchmark_on_collection",
         type=benchmarks,
         is_type=True,
         schema=schema,
@@ -277,7 +277,7 @@ def run(
 
     n_samples_per_sec, _, _ = benchmark_loader(loader, n_samples, batch_size)
     sheet = ln.Record.filter(
-        name="run_loading_benchmark_on_collection.py"
+        name="run_loading_benchmark_on_collection"
     ).one_or_none()
     if sheet is None:
         sheet = _create_benchmarking_sheet()
