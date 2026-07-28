@@ -1,38 +1,14 @@
 [build-system]
-build-backend = "hatchling.build"
-requires = ["hatchling"]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 name = "arrayloader_benchmarks"
 version = "0.0.1"
-description = "Benchmarking different minibatch loaders for AnnData."
+description = "Benchmarking utilities for data loaders for arrays."
 requires-python = ">=3.11"
-license = "BSD-3-Clause"
-authors = [
-  { name = "Alex Wolf" },
-  { name = "Ilan Gold" },
-  { name = "Felix Fishcer" },
-]
-maintainers = [
-  { name = "Felix Fischer", email = "felix.fischer@helmholtz-munich.de" },
-  { name = "Ilan Gold", email = "ilan.gold@helmholtz-munich.de" },
-]
+authors = [{name = "Lamin Labs", email = "open-source@lamin.ai"}]
 readme = "README.md"
-classifiers = [
-  "Environment :: Console",
-  "Framework :: Jupyter",
-  "Intended Audience :: Developers",
-  "Intended Audience :: Science/Research",
-  "Natural Language :: English",
-  "Operating System :: MacOS :: MacOS X",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX :: Linux",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Topic :: Scientific/Engineering :: Bio-Informatics",
-]
 dependencies = ["lamindb>1.11", "torch"]
 
 [project.optional-dependencies]
@@ -40,11 +16,8 @@ annbatch = ["annbatch"]
 scdataset = ["scdataset"]
 test = ["pytest", "pytest-xdist"]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["arrayloader_benchmarks"]
+[project.urls]
+Home = "https://github.com/laminlabs/arrayloader-benchmarks"
 
 [tool.ruff]
 src = ["."]
